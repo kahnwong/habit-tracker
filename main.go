@@ -2,30 +2,38 @@ package main
 
 import (
 	"fmt"
+	"strings"
 	"time"
 )
 
 func main() {
-	now := time.Now()
+	now := time.Now() // July 24, 2025
 
 	// Define dates to highlight (example: today, tomorrow, and a date in the past)
 	highlightDates := []time.Time{
 		now,
-		now.AddDate(0, 0, 1),
+		now.AddDate(0, 0, 1), // July 25, 2025
 		time.Date(2025, time.June, 15, 0, 0, 0, 0, time.Local),
 		time.Date(2025, time.August, 20, 0, 0, 0, 0, time.Local), // Another highlight for a 4th month example
+		time.Date(2025, time.May, 10, 0, 0, 0, 0, time.Local),    // Highlight for the 3rd last month
 	}
 
-	// Get the last four months for demonstration (you can change this number)
-	// Example: now.AddDate(0, -3, 0) gives 4 months total (current + 3 previous)
+	// Get the last four months for demonstration (current month + 3 previous = 4 months total)
+	// If now is July, this will be April, May, June, July.
 	numMonthsToDisplay := 12
 	allMonths := make([]time.Time, numMonthsToDisplay)
 	for i := 0; i < numMonthsToDisplay; i++ {
+		// Populate in reverse to get chronological order (earliest to latest)
 		allMonths[numMonthsToDisplay-1-i] = now.AddDate(0, -i, 0)
 	}
 
 	// Define the number of months per row
 	monthsPerRow := 3
+
+	// Define the fixed width of each calendar element (7 days * 3 chars/day = 21 chars for "XX " days.
+	// We'll aim for a total width that comfortably holds "Su Mo Tu We Th Fr Sa  " (22 chars)
+	const calendarElementRenderedWidth = 22 // "Su Mo Tu We Th Fr Sa  " is 22 chars
+	const paddingBetweenCalendars = 3
 
 	// Process months in blocks of 'monthsPerRow'
 	for i := 0; i < len(allMonths); i += monthsPerRow {
@@ -35,18 +43,30 @@ func main() {
 		}
 		currentBlockMonths := allMonths[i:endIdx]
 
-		// Print headers for the current block
-		for _, m := range currentBlockMonths {
-			fmt.Printf("%20s", m.Format("January 2006"))
+		// --- Print Headers for the Current Block ---
+		for idx, m := range currentBlockMonths {
+			title := m.Format("January 2006")
+			titlePadding := calendarElementRenderedWidth - len(title)
+			leftPad := titlePadding / 2
+			rightPad := titlePadding - leftPad
+			fmt.Printf("%s%s%s", strings.Repeat(" ", leftPad), title, strings.Repeat(" ", rightPad))
+
+			if idx < len(currentBlockMonths)-1 { // Don't add padding after the last month in the row
+				fmt.Printf("%s", strings.Repeat(" ", paddingBetweenCalendars))
+			}
 		}
 		fmt.Println()
 
-		for _, _ = range currentBlockMonths {
-			fmt.Printf("Su Mo Tu We Th Fr Sa  ")
+		// --- Print Weekday Headers ---
+		for idx, _ := range currentBlockMonths {
+			fmt.Printf("Su Mo Tu We Th Fr Sa  ") // This is exactly 22 chars
+			if idx < len(currentBlockMonths)-1 {
+				fmt.Printf("%s", strings.Repeat(" ", paddingBetweenCalendars))
+			}
 		}
 		fmt.Println()
 
-		// Calculate max number of weeks for the current block
+		// --- Calculate Max Number of Weeks for the Current Block ---
 		numWeeks := 0
 		for _, m := range currentBlockMonths {
 			firstDayOfMonth := time.Date(m.Year(), m.Month(), 1, 0, 0, 0, 0, time.Local)
@@ -60,7 +80,7 @@ func main() {
 			}
 		}
 
-		// Create a 2D slice to hold the formatted days for each month in the current block
+		// --- Create a 2D slice to hold the formatted days for each month in the current block ---
 		monthDaysBlock := make([][]string, len(currentBlockMonths))
 		for j, m := range currentBlockMonths {
 			firstDayOfMonth := time.Date(m.Year(), m.Month(), 1, 0, 0, 0, 0, time.Local)
@@ -68,33 +88,61 @@ func main() {
 
 			daysInMonth := getDaysInMonth(m.Year(), m.Month())
 
-			currentMonthDays := make([]string, numWeeks*7) // Use numWeeks from the block
+			// This inner slice will hold all formatted day strings for this month, including leading/trailing blanks
+			currentMonthDays := make([]string, numWeeks*7)
 			for k := 0; k < offset; k++ {
-				currentMonthDays[k] = "  " // Pad initial empty spaces
+				currentMonthDays[k] = "  " // Pad initial empty spaces. Each "  " is 2 chars. Day itself is 2 chars, then space. So day takes 3. "  " means "  " + " " = 3
 			}
 			for day := 1; day <= daysInMonth; day++ {
 				currentDay := time.Date(m.Year(), m.Month(), day, 0, 0, 0, 0, time.Local)
 				if isHighlighted(currentDay, highlightDates) {
-					currentMonthDays[offset+day-1] = fmt.Sprintf("\033[31m%2d\033[0m", day) // Red color
+					currentMonthDays[offset+day-1] = fmt.Sprintf("\033[31m%2d\033[0m", day) // Red color, takes 2 chars for day, ANSI codes don't count
 				} else {
-					currentMonthDays[offset+day-1] = fmt.Sprintf("%2d", day)
+					currentMonthDays[offset+day-1] = fmt.Sprintf("%2d", day) // Takes 2 chars
 				}
 			}
 			monthDaysBlock[j] = currentMonthDays
 		}
 
-		// Print the calendar row by row for the current block
+		// --- Print the calendar row by row for the current block ---
 		for week := 0; week < numWeeks; week++ {
-			for _, days := range monthDaysBlock {
+			for idx, days := range monthDaysBlock {
+				var weekLineBuilder strings.Builder
 				for dayOfWeek := 0; dayOfWeek < 7; dayOfWeek++ {
-					idx := week*7 + dayOfWeek
-					if idx < len(days) {
-						fmt.Printf("%s ", days[idx])
+					idxInDays := week*7 + dayOfWeek
+					if idxInDays < len(days) && days[idxInDays] != "" {
+						// Each day slot, whether it's a number or "  ", needs to be 3 characters wide
+						// If highlighted, the ANSI codes add invisible characters, but the displayed content is 2 chars.
+						// So, we need to add the trailing space explicitly.
+						// Example: " 1 ", "10 ", "   "
+						if strings.Contains(days[idxInDays], "\033[") { // Is it a highlighted string?
+							weekLineBuilder.WriteString(days[idxInDays]) // Add the color codes and the number
+							// The displayed width is 2 chars. We need 1 more space for the 3-char slot.
+							weekLineBuilder.WriteString(" ")
+						} else {
+							weekLineBuilder.WriteString(fmt.Sprintf("%2s ", days[idxInDays])) // Ensure 2-char content + 1 space
+						}
 					} else {
-						fmt.Print("   ") // Pad if month is shorter
+						weekLineBuilder.WriteString("   ") // 3 spaces for an empty day slot
 					}
 				}
-				fmt.Print(" ") // Space between months
+				// Pad the entire week string to ensure it's calendarElementRenderedWidth (22) characters long
+				// before adding the inter-calendar padding.
+				// The actual displayed length of the string from weekLineBuilder.String() will be calendarElementRenderedWidth-1 (21)
+				// because it does not include the last space that "Su Mo Tu We Th Fr Sa  " includes.
+				// Let's ensure it's always 22 by adding one more space at the end.
+				renderedWeekLine := weekLineBuilder.String()
+				fmt.Print(renderedWeekLine)
+				// The "Su Mo Tu We Th Fr Sa  " header is 22 chars. Our days are 7 * 3 = 21. Plus the final space makes 22.
+				// If renderedWeekLine.Len() is 21, and we need 22, add one more space.
+				if len(renderedWeekLine) < calendarElementRenderedWidth {
+					fmt.Print(strings.Repeat(" ", calendarElementRenderedWidth-len(renderedWeekLine)))
+				}
+
+				// Add padding between calendar elements, but not after the last one in the row
+				if idx < len(monthDaysBlock)-1 {
+					fmt.Printf("%s", strings.Repeat(" ", paddingBetweenCalendars))
+				}
 			}
 			fmt.Println()
 		}
