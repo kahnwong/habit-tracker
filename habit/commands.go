@@ -1,6 +1,7 @@
 package habit
 
 import (
+	"os"
 	"slices"
 	"time"
 
@@ -13,73 +14,73 @@ func Create(args []string) {
 	} else {
 		err := Habit.CreateHabit(args[0])
 		if err != nil {
-			log.Error().Msgf("Habit %s already exists\n", args[0])
+			log.Error().Msgf("Habit %s already exists", args[0])
 		} else {
-			log.Info().Msgf("Habit %s created\n", args[0])
+			log.Info().Msgf("Habit %s created", args[0])
 		}
 	}
 }
 
 func Do(args []string) {
-	if len(args) == 0 {
-		log.Fatal().Msg("Habit must be specified")
-	}
-
-	habitName := args[0]
-
-	// validate habit
-	habits, err := Habit.GetHabits()
-	if err != nil {
-		log.Fatal().Msg("Error getting habits")
-	}
-
-	// track habit
-	isValidHabit := slices.Contains(habits, habitName)
-	if isValidHabit {
+	if validateHabit(args) {
 		today := time.Now().Format("2006-01-02")
 
 		activity := Activity{
-			Date: today, IsCompleted: 1, HabitName: habitName}
+			Date: today, IsCompleted: 1, HabitName: args[0]}
 
-		err = Habit.Do(activity)
+		err := Habit.Do(activity)
 		if err != nil {
 			log.Error().Msg("Error logging a habit")
 		} else {
-			log.Info().Msgf("Logged %s for today\n", args[0])
+			log.Info().Msgf("Logged %s for today", args[0])
 		}
 	} else {
-		log.Error().Msgf("Invalid habit: %s\n", args[0])
+		log.Error().Msgf("Invalid habit: %s", args[0])
 	}
 }
 
 func Undo(args []string) { // some chunks are duplicated from `Do()`
+	if validateHabit(args) {
+		today := time.Now().Format("2006-01-02")
+
+		activity := Activity{
+			Date: today, IsCompleted: 0, HabitName: args[0]}
+
+		err := Habit.Undo(activity)
+		if err != nil {
+			log.Error().Msg("Error undoing a habit")
+		} else {
+			log.Info().Msgf("Undo %s for today", args[0])
+		}
+	} else {
+		log.Error().Msgf("Invalid habit: %s", args[0])
+	}
+}
+
+func GetActivities(args []string) []Activity {
+	var activities []Activity
+	var err error
+	if validateHabit(args) {
+		activities, err = Habit.GetActivity(args[0], 3)
+		if err != nil {
+			log.Info().Msgf("No activities found for habit: %s", args[0])
+			os.Exit(1)
+		}
+	}
+
+	return activities
+}
+
+func validateHabit(args []string) bool {
 	if len(args) == 0 {
 		log.Fatal().Msg("Habit must be specified")
 	}
 
 	habitName := args[0]
-
-	// validate habit
 	habits, err := Habit.GetHabits()
 	if err != nil {
 		log.Fatal().Msg("Error getting habits")
 	}
 
-	// untrack habit
-	isValidHabit := slices.Contains(habits, habitName)
-	if isValidHabit {
-		today := time.Now().Format("2006-01-02")
-
-		activity := Activity{
-			Date: today, IsCompleted: 0, HabitName: habitName}
-
-		err = Habit.Undo(activity)
-		if err != nil {
-			log.Error().Msg("Error undoing a habit")
-		} else {
-			log.Info().Msgf("Undo %s for today\n", args[0])
-		}
-	} else {
-		log.Error().Msgf("Invalid habit: %s\n", args[0])
-	}
+	return slices.Contains(habits, habitName)
 }

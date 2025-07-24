@@ -2,6 +2,7 @@ package habit
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/jmoiron/sqlx"
 	_ "github.com/mattn/go-sqlite3"
@@ -53,4 +54,22 @@ func (Habit *Application) Undo(activity Activity) error {
 	}
 
 	return nil
+}
+
+func (Habit *Application) GetActivity(habitName string, lookbackMonths int) ([]Activity, error) {
+	query := `
+	SELECT date, is_completed, habit_name
+	FROM activity
+	WHERE is_completed = 1 AND date >= ?
+	ORDER BY date;`
+
+	lookbackMonthsStr := time.Now().AddDate(0, -lookbackMonths, 0)
+	var completedActivities []Activity
+	err := Habit.DB.Select(&completedActivities, query, lookbackMonthsStr)
+	if err != nil {
+		fmt.Println(err)
+		return completedActivities, fmt.Errorf("error fetching activity for habit '%s'", habitName)
+	}
+
+	return completedActivities, nil
 }
