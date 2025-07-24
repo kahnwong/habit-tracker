@@ -25,29 +25,29 @@ func init() {
 	}
 
 	// init app
+	dbExists := isDBExists()
 	app := &Application{
 		DB: initDB(),
 	}
-	app.InitSchema()
+	app.InitSchema(dbExists)
 }
 
-func (app *Application) InitSchema() {
+func (app *Application) InitSchema(dbExists bool) {
 	var err error
 
-	dbExists := isDBExists()
 	db := app.DB
 
 	for tableName, schema := range tableSchemas {
 		if !dbExists { // Database file did not exist, so create the table
-			log.Debug().Msgf("Creating table '%s'...", tableName)
+			log.Debug().Msgf("INIT: DB - Creating table '%s'...", tableName)
 			_, err = db.Exec(schema)
 			if err != nil {
 				log.Fatal().Err(err).Msgf("Error creating table '%s'", tableName)
 			}
 
-			log.Debug().Msgf("Table '%s' created successfully!", tableName)
+			log.Debug().Msgf("INIT: DB - Table '%s' created successfully!", tableName)
 		} else { // Database file existed, validate its schema
-			log.Debug().Msgf("Database file '%s' found. Validating schema for table '%s'...", dbFileName, tableName)
+			log.Debug().Msgf("INIT: DB - Database file '%s' found. Validating schema for table '%s'...", dbFileName, tableName)
 			expectedCols, ok := allExpectedColumns[tableName]
 			if !ok {
 				log.Warn().Msgf("No expected column definitions for table '%s'. Skipping schema validation for this table.", tableName)
@@ -57,17 +57,17 @@ func (app *Application) InitSchema() {
 				log.Fatal().Err(err).Msgf("Schema validation failed for table '%s'", tableName)
 			}
 
-			log.Debug().Msgf("Schema for table '%s' validated successfully.", tableName)
+			log.Debug().Msgf("INIT: DB - Schema for table '%s' validated successfully.", tableName)
 		}
 	}
-	log.Debug().Msg("All tables processed successfully.")
+	log.Debug().Msg("INIT: DB - All tables processed successfully.")
 }
 
 func isDBExists() bool {
 	dbExists := true
 	if _, err := os.Stat(dbFileName); os.IsNotExist(err) {
 		dbExists = false
-		log.Debug().Msgf("Database file '%s' not found. It will be created.", dbFileName)
+		log.Debug().Msgf("INIT: DB - Database file '%s' not found. It will be created.", dbFileName)
 	} else if err != nil {
 		log.Fatal().Err(err).Msg("Error checking database file status")
 	}
