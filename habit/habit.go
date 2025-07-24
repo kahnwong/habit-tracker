@@ -6,6 +6,8 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
+var app *Application
+
 type Application struct {
 	DB *sqlx.DB
 }

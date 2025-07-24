@@ -26,7 +26,7 @@ func init() {
 
 	// init app
 	dbExists := isDBExists()
-	app := &Application{
+	app = &Application{
 		DB: initDB(),
 	}
 	app.InitSchema(dbExists)
