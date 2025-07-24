@@ -5,11 +5,14 @@ package calendar
 
 import (
 	"fmt"
+	"github.com/fatih/color"
 	"time"
 )
 
 var (
-	now = time.Now()
+	now   = time.Now()
+	Blue  = color.New(color.FgBlue).SprintFunc()
+	Green = color.New(color.FgHiGreen).SprintFunc()
 )
 
 const (

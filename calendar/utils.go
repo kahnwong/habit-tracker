@@ -59,7 +59,7 @@ func createMonthDaysBlock(currentBlockMonths []time.Time, numWeeks int, highligh
 			currentDay := time.Date(m.Year(), m.Month(), day, 0, 0, 0, 0, time.Local)
 			dayStr := fmt.Sprintf("%2d", day) // Format as " 1" or "10"
 			if isHighlighted(currentDay, highlightDates) {
-				currentMonthDays[offset+day-1] = fmt.Sprintf("\033[31m%s\033[0m", dayStr) // Store just the formatted date with color codes
+				currentMonthDays[offset+day-1] = Green(dayStr) // Store just the formatted date with color codes
 			} else {
 				currentMonthDays[offset+day-1] = dayStr // Store just the formatted date
 			}

@@ -12,7 +12,7 @@ func printHeaders(currentBlockMonths []time.Time) {
 		titlePadding := calendarElementRenderedWidth - len(title)
 		leftPad := titlePadding / 2
 		rightPad := titlePadding - leftPad
-		fmt.Printf("%s%s%s", strings.Repeat(" ", leftPad), title, strings.Repeat(" ", rightPad))
+		fmt.Printf("%s%s%s", strings.Repeat(" ", leftPad), Blue(title), strings.Repeat(" ", rightPad))
 
 		if idx < len(currentBlockMonths)-1 {
 			fmt.Printf("%s", strings.Repeat(" ", paddingBetweenCalendars))
