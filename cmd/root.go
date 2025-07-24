@@ -3,8 +3,12 @@ package cmd
 import (
 	"os"
 
+	"github.com/kahnwong/habit-tracker/habit"
+
 	"github.com/spf13/cobra"
 )
+
+var Habit = habit.Habit
 
 var rootCmd = &cobra.Command{
 	Use:   "habit-tracker",

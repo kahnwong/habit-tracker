@@ -1,23 +1,24 @@
 package habit
 
 import (
-	"context"
+	"fmt"
+
 	"github.com/jmoiron/sqlx"
 	_ "github.com/mattn/go-sqlite3"
 )
 
-var app *Application
+var Habit *Application
 
 type Application struct {
 	DB *sqlx.DB
 }
 
-// CreateUser demonstrates NamedExec with sqlx
-func (app *Application) CreateUser(ctx context.Context, name string, email string) error {
-	return nil
-}
+func (Habit *Application) CreateHabit(habit string) error {
+	query := `INSERT INTO habit (name) VALUES (?)`
+	_, err := Habit.DB.Exec(query, habit)
+	if err != nil {
+		return fmt.Errorf("error inserting habit '%s': %w", habit, err)
+	}
 
-// [TODO] debug
-func Foo() error {
 	return nil
 }

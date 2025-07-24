@@ -1,47 +1,24 @@
 package temp
 
 import (
-	"context"
 	"fmt"
-	"github.com/jmoiron/sqlx"
-	_ "github.com/mattn/go-sqlite3"
 	"log"
 	"time"
+
+	_ "github.com/mattn/go-sqlite3"
 )
 
 // [TODO] undo activity (today only)
-// [TODO] replace logs with zerolog
-
-var db *sqlx.DB
 
 func Foo() error {
 
-	db, err := sqlx.Connect("sqlite3", dbFileName)
-	if err != nil {
-		log.Fatalf("Error opening database connection: %v", err) // [TODO] replace
-	}
-
-	habits := []string{"Drink Water", "Exercise", "Read Book", "Meditate"}
-
-	log.Println("\n--- Inserting sample habits ---")
-	for _, habitName := range habits {
-		// Using INSERT OR IGNORE to prevent errors if the habit already exists (due to UNIQUE constraint)
-		query := `INSERT OR IGNORE INTO habit (name) VALUES (?)`
-		result, err := db.Exec(query, habitName)
-		if err != nil {
-			return fmt.Errorf("error inserting habit '%s': %w", habitName, err)
-		}
-		rowsAffected, err := result.RowsAffected()
-		if err != nil {
-			return fmt.Errorf("error getting rows affected for habit '%s': %w", habitName, err)
-		}
-		if rowsAffected > 0 {
-			log.Printf("Inserted habit: %s", habitName)
-		} else {
-			log.Printf("Habit '%s' already exists, skipped insertion.", habitName)
-		}
-	}
-	log.Println("--- Sample habits insertion complete ---")
+	//habits := []string{"Drink Water", "Exercise", "Read Book", "Meditate"}
+	//
+	//log.Println("\n--- Inserting sample habits ---")
+	//for _, habitName := range habits {
+	//
+	//}
+	//log.Println("--- Sample habits insertion complete ---")
 
 	//////// activity
 	log.Println("\n--- Inserting sample activities ---")
@@ -85,16 +62,7 @@ func Foo() error {
 	return nil
 }
 
-func init() {
-
-}
-
 func main() {
-
-	fmt.Println("Application ready. Performing some DB operations...")
-
-	// Example usage
-	ctx := context.Background() // Use context for all DB operations
 
 	// Insert a user
 	err := app.CreateUser(ctx, "Alice", "alice@example.com")

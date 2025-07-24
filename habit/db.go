@@ -26,19 +26,19 @@ func init() {
 
 	// init app
 	dbExists := isDBExists()
-	app = &Application{
+	Habit = &Application{
 		DB: initDB(),
 	}
-	app.InitSchema(dbExists)
+	Habit.InitSchema(dbExists)
 }
 
-func (app *Application) InitSchema(dbExists bool) {
+func (Habit *Application) InitSchema(dbExists bool) {
 	var err error
 
 	for tableName, schema := range tableSchemas {
 		if !dbExists { // Database file did not exist, so create the table
 			log.Debug().Msgf("INIT: DB - Creating table '%s'...", tableName)
-			_, err = app.DB.Exec(schema)
+			_, err = Habit.DB.Exec(schema)
 			if err != nil {
 				log.Fatal().Err(err).Msgf("Error creating table '%s'", tableName)
 			}
@@ -51,7 +51,7 @@ func (app *Application) InitSchema(dbExists bool) {
 				log.Warn().Msgf("No expected column definitions for table '%s'. Skipping schema validation for this table.", tableName)
 				continue
 			}
-			if err := validateSchema(app.DB, tableName, expectedCols); err != nil {
+			if err := validateSchema(Habit.DB, tableName, expectedCols); err != nil {
 				log.Fatal().Err(err).Msgf("Schema validation failed for table '%s'", tableName)
 			}
 
