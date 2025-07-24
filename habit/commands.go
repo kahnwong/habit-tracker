@@ -1,6 +1,7 @@
 package habit
 
 import (
+	"fmt"
 	"os"
 	"slices"
 	"time"
@@ -59,12 +60,12 @@ func Undo(args []string) { // some chunks are duplicated from `Do()`
 	}
 }
 
-func Show(lookbackMonths int, args []string) {
+func ShowHabitActivity(lookbackMonths int, args []string) {
 	// fetch activities
 	var activities []Activity
 	var err error
 	if validateHabit(args) {
-		activities, err = Habit.GetActivity(args[0], lookbackMonths)
+		activities, err = Habit.GetHabitActivity(args[0], lookbackMonths)
 		if err != nil {
 			log.Info().Msgf("No activities found for habit: %s", args[0])
 			os.Exit(0)
@@ -92,6 +93,26 @@ func Show(lookbackMonths int, args []string) {
 	calendar.RenderCalendarView(lookbackMonths, dates)
 }
 
+func ShowPeriodActivity(period string, args []string) {
+	// fetch activities
+	var activities []Activity
+	var err error
+	activities, err = Habit.GetPeriodActivity(period)
+	if err != nil {
+		log.Info().Msgf("No activities found for period: %s", period)
+		os.Exit(0)
+	}
+
+	if len(activities) == 0 {
+		log.Info().Msgf("No activities found for period: %s", period)
+		os.Exit(0)
+	}
+
+	// do something
+	fmt.Println(activities)
+}
+
+// utils
 func validateHabit(args []string) bool {
 	if len(args) == 0 {
 		log.Fatal().Msg("Habit must be specified")

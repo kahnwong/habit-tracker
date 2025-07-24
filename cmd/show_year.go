@@ -10,7 +10,7 @@ var showYearCmd = &cobra.Command{
 	Use:   "show-year",
 	Short: "Show habit stats for current year",
 	Run: func(cmd *cobra.Command, args []string) {
-		habit.Show(12, args)
+		habit.ShowHabitActivity(12, args)
 	},
 }
 

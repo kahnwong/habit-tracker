@@ -56,18 +56,42 @@ func (Habit *Application) Undo(activity Activity) error {
 	return nil
 }
 
-func (Habit *Application) GetActivity(habitName string, lookbackMonths int) ([]Activity, error) {
+func (Habit *Application) GetHabitActivity(habitName string, lookbackMonths int) ([]Activity, error) {
 	query := `
 	SELECT date, is_completed, habit_name
 	FROM activity
 	WHERE is_completed = 1 AND date >= ? AND habit_name = ?
 	ORDER BY date;`
 
-	lookbackMonthsStr := time.Now().AddDate(0, -lookbackMonths, 0)
+	lookbackStart := time.Now().AddDate(0, -lookbackMonths, 0)
 	var completedActivities []Activity
-	err := Habit.DB.Select(&completedActivities, query, lookbackMonthsStr, habitName)
+	err := Habit.DB.Select(&completedActivities, query, lookbackStart, habitName)
 	if err != nil {
 		return completedActivities, fmt.Errorf("error fetching activity for habit '%s'", habitName)
+	}
+
+	return completedActivities, nil
+}
+
+func (Habit *Application) GetPeriodActivity(period string) ([]Activity, error) {
+	query := `
+	SELECT date, is_completed, habit_name
+	FROM activity
+	WHERE is_completed = 1 AND date >= ?
+	ORDER BY date;`
+
+	var lookbackStart time.Time
+	var now = time.Now()
+	switch period {
+	case "today":
+		lookbackStart = time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location())
+	}
+	lookbackStartStr := lookbackStart.Format("2006-01-02")
+
+	var completedActivities []Activity
+	err := Habit.DB.Select(&completedActivities, query, lookbackStartStr)
+	if err != nil {
+		return completedActivities, fmt.Errorf("error fetching activity for period '%s'", period)
 	}
 
 	return completedActivities, nil
