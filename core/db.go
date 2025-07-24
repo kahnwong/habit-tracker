@@ -31,17 +31,19 @@ var tableSchemas = map[string]string{
 	);`,
 	"habit": `
 	CREATE TABLE habit (
-		id TEXT PRIMARY KEY, -- UUIDs as TEXT
+		id INTEGER PRIMARY KEY AUTOINCREMENT,
 		name TEXT UNIQUE NOT NULL
 	);`,
 	"activity": `
 	CREATE TABLE activity (
-		id TEXT PRIMARY KEY,
+		id INTEGER PRIMARY KEY AUTOINCREMENT,
 		date TEXT NOT NULL,  -- YYYY-MM-DD format (e.g., '2023-10-27')
 		is_completed INTEGER NOT NULL, -- 0 for false, 1 for true (boolean)
 		habit_name TEXT NOT NULL,
 		FOREIGN KEY (habit_name) REFERENCES habit(name) ON DELETE CASCADE
-	);`,
+	);
+	CREATE INDEX idx_activity_habit_name ON activity (habit_name);
+	CREATE INDEX idx_activity_date ON activity (date);`,
 }
 
 // Define expected column definitions for schema validation for each table
@@ -52,11 +54,11 @@ var allExpectedColumns = map[string]map[string]string{
 		"email": "TEXT",
 	},
 	"habit": {
-		"id":   "TEXT",
+		"id":   "INTEGER",
 		"name": "TEXT",
 	},
 	"activity": {
-		"id":           "TEXT",
+		"id":           "INTEGER",
 		"date":         "TEXT",
 		"is_completed": "INTEGER",
 		"habit_name":   "TEXT",
