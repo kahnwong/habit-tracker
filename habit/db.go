@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	"github.com/jmoiron/sqlx"
-	"log"
+	"github.com/rs/zerolog/log"
 	"os"
 	"time"
 )
@@ -26,38 +26,38 @@ func (app *Application) InitSchema() {
 	db := app.DB
 
 	for tableName, schema := range tableSchemas {
-		if !dbExists {
-			// Database file did not exist, so create the table
-			log.Printf("Creating table '%s'...", tableName)
+		if !dbExists { // Database file did not exist, so create the table
+			log.Debug().Msgf("Creating table '%s'...", tableName)
 			_, err = db.Exec(schema)
 			if err != nil {
-				log.Fatalf("Error creating table '%s': %v", tableName, err)
+				log.Fatal().Err(err).Msgf("Error creating table '%s'", tableName)
 			}
-			log.Printf("Table '%s' created successfully!", tableName)
-		} else {
-			// Database file existed, validate its schema
-			log.Printf("Database file '%s' found. Validating schema for table '%s'...", dbFileName, tableName)
+
+			log.Debug().Msgf("Table '%s' created successfully!", tableName)
+		} else { // Database file existed, validate its schema
+			log.Debug().Msgf("Database file '%s' found. Validating schema for table '%s'...", dbFileName, tableName)
 			expectedCols, ok := allExpectedColumns[tableName]
 			if !ok {
-				log.Printf("Warning: No expected column definition found for table '%s'. Skipping schema validation for this table.", tableName)
+				log.Warn().Msgf("No expected column definitions for table '%s'. Skipping schema validation for this table.", tableName)
 				continue
 			}
 			if err := validateSchema(db, tableName, expectedCols); err != nil {
-				log.Fatalf("Schema validation failed for table '%s': %v", tableName, err)
+				log.Fatal().Err(err).Msgf("Schema validation failed for table '%s'", tableName)
 			}
-			log.Printf("Schema for table '%s' validated successfully.", tableName)
+
+			log.Debug().Msgf("Schema for table '%s' validated successfully.", tableName)
 		}
 	}
-	log.Println("All tables processed successfully.")
+	log.Debug().Msg("All tables processed successfully.")
 }
 
 func isDBExists() bool {
 	dbExists := true
 	if _, err := os.Stat(dbFileName); os.IsNotExist(err) {
 		dbExists = false
-		log.Printf("Database file '%s' not found. It will be created.", dbFileName) // [TODO] replace
+		log.Debug().Msgf("Database file '%s' not found. It will be created.", dbFileName)
 	} else if err != nil {
-		log.Fatalf("Error checking database file status: %v", err) // [TODO] replace
+		log.Fatal().Err(err).Msg("Error checking database file status")
 	}
 	return dbExists
 }
@@ -65,7 +65,7 @@ func isDBExists() bool {
 func initDB() *sqlx.DB {
 	db, err := sqlx.Connect("sqlite3", dbFileName)
 	if err != nil {
-		log.Fatalf("Error opening database connection: %v", err) // [TODO] replace
+		log.Fatal().Err(err).Msg("Error opening database connection")
 	}
 
 	db.SetMaxOpenConns(5)
