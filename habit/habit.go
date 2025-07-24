@@ -2,6 +2,7 @@ package habit
 
 import (
 	"fmt"
+
 	"github.com/jmoiron/sqlx"
 	_ "github.com/mattn/go-sqlite3"
 )
@@ -11,8 +12,6 @@ var Habit *Application
 type Application struct {
 	DB *sqlx.DB
 }
-
-// [TODO] undo activity (today only)
 
 func (Habit *Application) CreateHabit(habit string) error {
 	query := `INSERT INTO habit (name) VALUES (?)`
@@ -41,6 +40,16 @@ func (Habit *Application) Do(activity Activity) error {
 	_, err := Habit.DB.Exec(query, activity.Date, activity.IsCompleted, activity.HabitName)
 	if err != nil {
 		return fmt.Errorf("error inserting activity for habit '%s' on '%s': %w", activity.HabitName, activity.Date, err)
+	}
+
+	return nil
+}
+
+func (Habit *Application) Undo(activity Activity) error {
+	deleteQuery := "DELETE FROM activity WHERE date = ? AND habit_name = ?"
+	_, err := Habit.DB.Exec(deleteQuery, activity.Date, activity.HabitName)
+	if err != nil {
+		return fmt.Errorf("error deleting habit '%s' on '%s': %w", activity.HabitName, activity.Date, err)
 	}
 
 	return nil
