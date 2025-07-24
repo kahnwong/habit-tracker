@@ -6,24 +6,28 @@ import (
 	"time"
 )
 
-func main() {
-	now := time.Now()
+var now = time.Now()
 
+func generateMonths(lookbackMonths int) []time.Time {
+	allMonths := make([]time.Time, lookbackMonths)
+	for i := 0; i < lookbackMonths; i++ {
+		allMonths[lookbackMonths-1-i] = now.AddDate(0, -i, 0)
+	}
+
+	return allMonths
+}
+
+func main() {
 	// Define dates to highlight (example: today, tomorrow, and a date in the past)
 	highlightDates := []time.Time{
-		now,
-		now.AddDate(0, 0, 1),
 		time.Date(2025, time.June, 15, 0, 0, 0, 0, time.Local),
 		time.Date(2025, time.August, 20, 0, 0, 0, 0, time.Local),
 		time.Date(2025, time.May, 10, 0, 0, 0, 0, time.Local),
+		time.Date(2025, time.July, 10, 0, 0, 0, 0, time.Local),
 	}
 
 	// Get the last four months for demonstration
-	numMonthsToDisplay := 12
-	allMonths := make([]time.Time, numMonthsToDisplay)
-	for i := 0; i < numMonthsToDisplay; i++ {
-		allMonths[numMonthsToDisplay-1-i] = now.AddDate(0, -i, 0)
-	}
+	allMonths := generateMonths(4)
 
 	// Define the number of months per row
 	monthsPerRow := 3
