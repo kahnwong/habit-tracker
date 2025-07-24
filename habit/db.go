@@ -35,12 +35,10 @@ func init() {
 func (app *Application) InitSchema(dbExists bool) {
 	var err error
 
-	db := app.DB
-
 	for tableName, schema := range tableSchemas {
 		if !dbExists { // Database file did not exist, so create the table
 			log.Debug().Msgf("INIT: DB - Creating table '%s'...", tableName)
-			_, err = db.Exec(schema)
+			_, err = app.DB.Exec(schema)
 			if err != nil {
 				log.Fatal().Err(err).Msgf("Error creating table '%s'", tableName)
 			}
@@ -53,7 +51,7 @@ func (app *Application) InitSchema(dbExists bool) {
 				log.Warn().Msgf("No expected column definitions for table '%s'. Skipping schema validation for this table.", tableName)
 				continue
 			}
-			if err := validateSchema(db, tableName, expectedCols); err != nil {
+			if err := validateSchema(app.DB, tableName, expectedCols); err != nil {
 				log.Fatal().Err(err).Msgf("Schema validation failed for table '%s'", tableName)
 			}
 
