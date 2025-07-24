@@ -11,6 +11,8 @@ import (
 	_ "github.com/mattn/go-sqlite3" // Import the SQLite driver
 )
 
+// [TODO] unto activity (today only)
+
 func Foo() error {
 	fmt.Println("foo")
 
@@ -54,7 +56,7 @@ func Foo() error {
 		IsCompleted int // 0 for false, 1 for true
 		HabitName   string
 	}{
-		{today, 1, "Drink Water"},
+		{today, 0, "Drink Water"},
 		{today, 0, "Exercise"},
 		{yesterday, 1, "Drink Water"},
 		{yesterday, 1, "Read Book"},
