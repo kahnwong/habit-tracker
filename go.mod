@@ -4,6 +4,8 @@ go 1.24.3
 
 require (
 	github.com/fatih/color v1.18.0
+	github.com/jmoiron/sqlx v1.4.0
+	github.com/mattn/go-sqlite3 v1.14.28
 	github.com/spf13/cobra v1.9.1
 )
 
