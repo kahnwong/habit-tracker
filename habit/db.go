@@ -100,7 +100,12 @@ func validateSchema(db *sqlx.DB, tableName string, expectedColumns map[string]st
 	if err != nil {
 		return fmt.Errorf("error querying table info for '%s': %w", tableName, err)
 	}
-	defer rows.Close()
+	defer func(rows *sqlx.Rows) {
+		err := rows.Close()
+		if err != nil {
+			log.Error().Err(err).Msgf("Error closing rows for table '%s'", tableName)
+		}
+	}(rows)
 
 	// Map to store found columns and their types
 	foundColumns := make(map[string]string)
