@@ -1,6 +1,9 @@
 package calendar
 
-import "time"
+import (
+	"fmt"
+	"time"
+)
 
 func generateMonths(lookbackMonths int) []time.Time {
 	allMonths := make([]time.Time, lookbackMonths)
@@ -38,4 +41,30 @@ func getMaxWeeks(currentBlockMonths []time.Time) int {
 		}
 	}
 	return numWeeks
+}
+
+func createMonthDaysBlock(currentBlockMonths []time.Time, numWeeks int, highlightDates []time.Time) [][]string {
+	monthDaysBlock := make([][]string, len(currentBlockMonths))
+	for j, m := range currentBlockMonths {
+		firstDayOfMonth := time.Date(m.Year(), m.Month(), 1, 0, 0, 0, 0, time.Local)
+		offset := int(firstDayOfMonth.Weekday())
+
+		daysInMonth := getDaysInMonth(m.Year(), m.Month())
+
+		currentMonthDays := make([]string, numWeeks*7)
+		for k := 0; k < offset; k++ {
+			currentMonthDays[k] = "   " // Each "day slot" is 3 chars wide
+		}
+		for day := 1; day <= daysInMonth; day++ {
+			currentDay := time.Date(m.Year(), m.Month(), day, 0, 0, 0, 0, time.Local)
+			dayStr := fmt.Sprintf("%2d", day) // Format as " 1" or "10"
+			if isHighlighted(currentDay, highlightDates) {
+				currentMonthDays[offset+day-1] = fmt.Sprintf("\033[31m%s\033[0m", dayStr) // Store just the formatted date with color codes
+			} else {
+				currentMonthDays[offset+day-1] = dayStr // Store just the formatted date
+			}
+		}
+		monthDaysBlock[j] = currentMonthDays
+	}
+	return monthDaysBlock
 }
