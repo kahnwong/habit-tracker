@@ -5,6 +5,8 @@ import (
 	"slices"
 	"time"
 
+	"github.com/kahnwong/habit-tracker/calendar"
+
 	"github.com/rs/zerolog/log"
 )
 
@@ -57,7 +59,8 @@ func Undo(args []string) { // some chunks are duplicated from `Do()`
 	}
 }
 
-func GetActivities(lookbackMonths int, args []string) []Activity {
+func Show(lookbackMonths int, args []string) {
+	// fetch activities
 	var activities []Activity
 	var err error
 	if validateHabit(args) {
@@ -68,7 +71,25 @@ func GetActivities(lookbackMonths int, args []string) []Activity {
 		}
 	}
 
-	return activities
+	if len(activities) == 0 {
+		log.Info().Msgf("No activities found for habit: %s", args[0])
+		os.Exit(0)
+	}
+
+	// parse date
+	var dates []time.Time
+	layout := "2006-01-02"
+	for _, a := range activities {
+		t, err := time.Parse(layout, a.Date)
+		if err != nil {
+			log.Error().Msgf("Error parsing date: %s", a.Date)
+			continue
+		}
+		dates = append(dates, t)
+	}
+
+	// render calendar
+	calendar.RenderCalendarView(lookbackMonths, dates)
 }
 
 func validateHabit(args []string) bool {
