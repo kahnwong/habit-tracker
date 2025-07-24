@@ -5,8 +5,9 @@ package calendar
 
 import (
 	"fmt"
-	"github.com/fatih/color"
 	"time"
+
+	"github.com/fatih/color"
 )
 
 var (

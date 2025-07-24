@@ -75,16 +75,17 @@ func isLeapYear(year int) bool {
 }
 
 func getDaysInMonth(year int, month time.Month) int {
-	if month == time.February {
+	switch month {
+	case time.February:
 		if isLeapYear(year) {
 			return 29
 		}
 		return 28
-	} else if month == time.April || month == time.June ||
-		month == time.September || month == time.November {
+	case time.April, time.June, time.September, time.November:
 		return 30
+	default:
+		return 31 // For all other months (Jan, Mar, May, Jul, Aug, Oct, Dec)
 	}
-	return 31
 }
 
 func isHighlighted(date time.Time, highlightDates []time.Time) bool {

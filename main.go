@@ -2,8 +2,9 @@ package main
 
 import (
 	"fmt"
-	"github.com/kahnwong/habit-tracker/calendar"
 	"time"
+
+	"github.com/kahnwong/habit-tracker/calendar"
 )
 
 func main() {

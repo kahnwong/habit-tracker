@@ -50,11 +50,12 @@ func renderCalendar(numWeeks int, monthDaysBlock [][]string) {
 				// Prepend spaces to center the number within its 3-character slot.
 				// Or just ensure it's left-aligned and padded right. "%2s" already handles leading space.
 				// We just need a trailing space if the content itself (like " 1" or "10") is 2 chars.
-				if displayLength == 2 { // This is a " 1" or "10"
+				switch displayLength {
+				case 2: // This is a " 1" or "10"
 					weekLineBuilder.WriteString(dayContent + " ")
-				} else if displayLength == 1 { // This shouldn't happen with "%2d" but as a fallback
+				case 1: // This shouldn't happen with "%2d" but as a fallback
 					weekLineBuilder.WriteString(" " + dayContent + " ") // Center single digit if it somehow appears
-				} else { // This is either an empty slot "   " or already correctly formatted
+				default: // This is either an empty slot "   " or already correctly formatted
 					weekLineBuilder.WriteString(dayContent) // Use as is, assuming it's "   " or already 3 chars
 				}
 			}
