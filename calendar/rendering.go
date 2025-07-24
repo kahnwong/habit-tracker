@@ -85,3 +85,19 @@ func renderCalendar(numWeeks int, monthDaysBlock [][]string) {
 		fmt.Println()
 	}
 }
+
+// helpers
+func calculateDisplayedWidth(s string) int {
+	inEscape := false
+	width := 0
+	for _, r := range s {
+		if r == '\033' {
+			inEscape = true
+		} else if inEscape && r == 'm' {
+			inEscape = false
+		} else if !inEscape {
+			width++
+		}
+	}
+	return width
+}

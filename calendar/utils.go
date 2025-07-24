@@ -68,3 +68,31 @@ func createMonthDaysBlock(currentBlockMonths []time.Time, numWeeks int, highligh
 	}
 	return monthDaysBlock
 }
+
+// helpers
+func isLeapYear(year int) bool {
+	return (year%4 == 0 && year%100 != 0) || (year%400 == 0)
+}
+
+func getDaysInMonth(year int, month time.Month) int {
+	if month == time.February {
+		if isLeapYear(year) {
+			return 29
+		}
+		return 28
+	} else if month == time.April || month == time.June ||
+		month == time.September || month == time.November {
+		return 30
+	}
+	return 31
+}
+
+func isHighlighted(date time.Time, highlightDates []time.Time) bool {
+	for _, hd := range highlightDates {
+		// Compare Year, Month, and Day to ignore time components
+		if date.Year() == hd.Year() && date.Month() == hd.Month() && date.Day() == hd.Day() {
+			return true
+		}
+	}
+	return false
+}
