@@ -22,7 +22,6 @@ const (
 func RenderCalendarView(lookbackMonths int, highlightDates []time.Time) {
 	allMonths := generateMonths(lookbackMonths)
 
-	// Process months in blocks of 'monthsPerRow'
 	for i := 0; i < len(allMonths); i += monthsPerRow {
 		endIdx := i + monthsPerRow
 		if endIdx > len(allMonths) {
@@ -31,15 +30,7 @@ func RenderCalendarView(lookbackMonths int, highlightDates []time.Time) {
 		currentBlockMonths := allMonths[i:endIdx]
 
 		printHeaders(currentBlockMonths)
-
-		// --- Print Weekday Headers ---
-		for idx := range currentBlockMonths {
-			fmt.Printf("Su Mo Tu We Th Fr Sa  ") // This is exactly 22 chars
-			if idx < len(currentBlockMonths)-1 {
-				fmt.Printf("%s", strings.Repeat(" ", paddingBetweenCalendars))
-			}
-		}
-		fmt.Println()
+		printWeekdayHeaders(currentBlockMonths)
 
 		// --- Calculate Max Number of Weeks for the Current Block ---
 		numWeeks := 0
@@ -181,20 +172,4 @@ func calculateDisplayedWidth(s string) int {
 		}
 	}
 	return width
-}
-
-// rendering
-func printHeaders(currentBlockMonths []time.Time) {
-	for idx, m := range currentBlockMonths {
-		title := m.Format("January 2006")
-		titlePadding := calendarElementRenderedWidth - len(title)
-		leftPad := titlePadding / 2
-		rightPad := titlePadding - leftPad
-		fmt.Printf("%s%s%s", strings.Repeat(" ", leftPad), title, strings.Repeat(" ", rightPad))
-
-		if idx < len(currentBlockMonths)-1 {
-			fmt.Printf("%s", strings.Repeat(" ", paddingBetweenCalendars))
-		}
-	}
-	fmt.Println()
 }
