@@ -10,6 +10,7 @@ import (
 )
 
 var dbFileName = "habits.sqlite" // [TODO] set via config (plain yaml, not sops)
+// [TODO] replace logs with zerolog
 
 func Foo() error {
 	db, err := sqlx.Connect("sqlite3", "habits.sqlite")
@@ -82,16 +83,9 @@ func Foo() error {
 }
 
 func init() {
-	// Check if the database file exists
-	dbExists := true
-	if _, err := os.Stat(dbFileName); os.IsNotExist(err) {
-		dbExists = false
-		log.Printf("Database file '%s' not found. It will be created.", dbFileName)
-	} else if err != nil {
-		// Handle other potential errors when checking file status
-		log.Fatalf("Error checking database file status: %v", err)
-	}
+	dbExists := isDBExists()
 
+	/////////
 	// Open the database connection using sqlx.Connect
 	// If the file does not exist, the sqlite3 driver will create it upon connection.
 	db, err := sqlx.Connect("sqlite3", dbFileName)
@@ -202,4 +196,16 @@ func validateSchema(db *sqlx.DB, tableName string, expectedColumns map[string]st
 	// but for now, we only ensure all expected columns are present and correct.
 
 	return nil // Schema is valid
+}
+
+// ///////
+func isDBExists() bool {
+	dbExists := true
+	if _, err := os.Stat(dbFileName); os.IsNotExist(err) {
+		dbExists = false
+		log.Printf("Database file '%s' not found. It will be created.", dbFileName) // [TODO] replace
+	} else if err != nil {
+		log.Fatalf("Error checking database file status: %v", err) // [TODO] replace
+	}
+	return dbExists
 }
