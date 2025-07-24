@@ -3,16 +3,24 @@ package habit
 import (
 	"database/sql"
 	"fmt"
-	"github.com/jmoiron/sqlx"
-	"github.com/rs/zerolog/log"
 	"os"
 	"time"
+
+	"github.com/jmoiron/sqlx"
+	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/log"
 )
 
-// [TODO] set zerolog format
 var dbFileName = "habits.sqlite" // [TODO] set via config (plain yaml, not sops)
 
 func init() {
+	log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
+	zerolog.SetGlobalLevel(zerolog.InfoLevel)
+
+	if os.Getenv("MODE") == "DEBUG" {
+		zerolog.SetGlobalLevel(zerolog.DebugLevel)
+	}
+
 	app := &Application{
 		DB: initDB(),
 	}
