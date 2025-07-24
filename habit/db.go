@@ -9,6 +9,7 @@ import (
 	"time"
 )
 
+// [TODO] set zerolog format
 var dbFileName = "habits.sqlite" // [TODO] set via config (plain yaml, not sops)
 
 func init() {
