@@ -29,7 +29,7 @@ func main() {
 		time.Date(2025, time.July, 10, 0, 0, 0, 0, time.Local),
 	}
 
-	allMonths := generateMonths(4)
+	allMonths := generateMonths(3)
 
 	// Process months in blocks of 'monthsPerRow'
 	for i := 0; i < len(allMonths); i += monthsPerRow {
@@ -39,19 +39,7 @@ func main() {
 		}
 		currentBlockMonths := allMonths[i:endIdx]
 
-		// --- Print Headers for the Current Block ---
-		for idx, m := range currentBlockMonths {
-			title := m.Format("January 2006")
-			titlePadding := calendarElementRenderedWidth - len(title)
-			leftPad := titlePadding / 2
-			rightPad := titlePadding - leftPad
-			fmt.Printf("%s%s%s", strings.Repeat(" ", leftPad), title, strings.Repeat(" ", rightPad))
-
-			if idx < len(currentBlockMonths)-1 {
-				fmt.Printf("%s", strings.Repeat(" ", paddingBetweenCalendars))
-			}
-		}
-		fmt.Println()
+		printHeaders(currentBlockMonths)
 
 		// --- Print Weekday Headers ---
 		for idx := range currentBlockMonths {
@@ -153,8 +141,10 @@ func main() {
 			}
 			fmt.Println()
 		}
+
 		fmt.Println() // Add an extra newline between blocks for better separation
 	}
+	fmt.Printf("----%s\n", now) // debug
 }
 
 // isLeapYear checks if a year is a leap year.
@@ -225,4 +215,18 @@ func removePreviousYearDates(dates []time.Time) []time.Time {
 	return currentYearDates
 }
 
-//
+// rendering
+func printHeaders(currentBlockMonths []time.Time) {
+	for idx, m := range currentBlockMonths {
+		title := m.Format("January 2006")
+		titlePadding := calendarElementRenderedWidth - len(title)
+		leftPad := titlePadding / 2
+		rightPad := titlePadding - leftPad
+		fmt.Printf("%s%s%s", strings.Repeat(" ", leftPad), title, strings.Repeat(" ", rightPad))
+
+		if idx < len(currentBlockMonths)-1 {
+			fmt.Printf("%s", strings.Repeat(" ", paddingBetweenCalendars))
+		}
+	}
+	fmt.Println()
+}
