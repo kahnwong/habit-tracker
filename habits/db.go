@@ -1,4 +1,4 @@
-package core
+package habits
 
 import (
 	"database/sql"
@@ -8,14 +8,12 @@ import (
 	"time"
 
 	"github.com/jmoiron/sqlx"
-	_ "github.com/mattn/go-sqlite3" // Import the SQLite driver
+	_ "github.com/mattn/go-sqlite3"
 )
 
 // [TODO] unto activity (today only)
 
 func Foo() error {
-	fmt.Println("foo")
-
 	db, err := sqlx.Connect("sqlite3", "habits.sqlite")
 	if err != nil {
 		log.Fatalf("Error opening database connection: %v", err)

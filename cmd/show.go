@@ -2,7 +2,7 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/kahnwong/habit-tracker/core"
+	"github.com/kahnwong/habit-tracker/habits"
 	"time"
 
 	"github.com/kahnwong/habit-tracker/calendar"
@@ -14,7 +14,7 @@ var showCmd = &cobra.Command{
 	Use:   "show",
 	Short: "Show habit stats",
 	Run: func(cmd *cobra.Command, args []string) {
-		_ = core.Foo()
+		_ = habits.Foo()
 		highlightDates := []time.Time{
 			time.Date(2025, time.June, 15, 0, 0, 0, 0, time.Local),
 			time.Date(2025, time.August, 20, 0, 0, 0, 0, time.Local),
