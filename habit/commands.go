@@ -6,6 +6,7 @@ import (
 	"slices"
 	"time"
 
+	"github.com/jedib0t/go-pretty/v6/table"
 	"github.com/kahnwong/habit-tracker/calendar"
 
 	"github.com/rs/zerolog/log"
@@ -108,8 +109,30 @@ func ShowPeriodActivity(period string, args []string) {
 		os.Exit(0)
 	}
 
-	// do something
-	fmt.Println(activities)
+	// render table // [TODO] display other unspecified habits
+	tw := table.NewWriter()
+	tw.SetOutputMirror(os.Stdout)
+
+	//// order results
+	orderedLabels := []string{"Foo", "Bar", "Baz"}
+	dataMap := make(map[string]Activity)
+	for _, item := range activities {
+		dataMap[item.HabitName] = item
+	}
+
+	for _, label := range orderedLabels {
+		if _, ok := dataMap[label]; ok {
+			tw.AppendRow(table.Row{fmt.Sprintf("%-6s", label), "✓"}) // %-6s for left-alignment and padding
+		}
+	}
+
+	//// styling
+	tw.SetStyle(table.Style{
+		Options: table.OptionsNoBordersAndSeparators,
+	})
+
+	// render
+	tw.Render()
 }
 
 // utils
