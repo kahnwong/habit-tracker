@@ -32,19 +32,7 @@ func RenderCalendarView(lookbackMonths int, highlightDates []time.Time) {
 		printHeaders(currentBlockMonths)
 		printWeekdayHeaders(currentBlockMonths)
 
-		// --- Calculate Max Number of Weeks for the Current Block ---
-		numWeeks := 0
-		for _, m := range currentBlockMonths {
-			firstDayOfMonth := time.Date(m.Year(), m.Month(), 1, 0, 0, 0, 0, time.Local)
-			offset := int(firstDayOfMonth.Weekday())
-
-			daysInMonth := getDaysInMonth(m.Year(), m.Month())
-
-			weeks := (offset + daysInMonth + 6) / 7
-			if weeks > numWeeks {
-				numWeeks = weeks
-			}
-		}
+		numWeeks := getMaxWeeks(currentBlockMonths)
 
 		// --- Create a 2D slice to hold the formatted days for each month in the current block ---
 		monthDaysBlock := make([][]string, len(currentBlockMonths))

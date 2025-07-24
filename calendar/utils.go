@@ -22,3 +22,20 @@ func removePreviousYearDates(dates []time.Time) []time.Time {
 	}
 	return currentYearDates
 }
+
+func getMaxWeeks(currentBlockMonths []time.Time) int {
+	// --- Calculate Max Number of Weeks for the Current Block ---
+	numWeeks := 0
+	for _, m := range currentBlockMonths {
+		firstDayOfMonth := time.Date(m.Year(), m.Month(), 1, 0, 0, 0, 0, time.Local)
+		offset := int(firstDayOfMonth.Weekday())
+
+		daysInMonth := getDaysInMonth(m.Year(), m.Month())
+
+		weeks := (offset + daysInMonth + 6) / 7
+		if weeks > numWeeks {
+			numWeeks = weeks
+		}
+	}
+	return numWeeks
+}
