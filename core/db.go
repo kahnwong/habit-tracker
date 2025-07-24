@@ -102,7 +102,8 @@ var tableSchemas = map[string]string{
 		date TEXT NOT NULL,  -- YYYY-MM-DD format (e.g., '2023-10-27')
 		is_completed INTEGER NOT NULL, -- 0 for false, 1 for true (boolean)
 		habit_name TEXT NOT NULL,
-		FOREIGN KEY (habit_name) REFERENCES habit(name) ON DELETE CASCADE
+		FOREIGN KEY (habit_name) REFERENCES habit(name) ON DELETE CASCADE,
+	    UNIQUE (habit_name, date, is_completed) -- Added unique constraint here
 	);
 	CREATE INDEX idx_activity_habit_name ON activity (habit_name);
 	CREATE INDEX idx_activity_date ON activity (date);`,
