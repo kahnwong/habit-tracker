@@ -14,13 +14,6 @@ func Foo() {
 	fmt.Println("foo")
 }
 
-// User represents the structure of our users table for scanning query results (example)
-type User struct {
-	ID    int    `db:"id"`
-	Name  string `db:"name"`
-	Email string `db:"email"`
-}
-
 // Define expected schemas for all tables
 var tableSchemas = map[string]string{
 	"users": `
