@@ -9,6 +9,8 @@ import (
 	"time"
 )
 
+var dbFileName = "habits.sqlite" // [TODO] set via config (plain yaml, not sops)
+
 func Foo() error {
 	db, err := sqlx.Connect("sqlite3", "habits.sqlite")
 	if err != nil {
@@ -79,55 +81,7 @@ func Foo() error {
 	return nil
 }
 
-// Define expected schemas for all tables
-var tableSchemas = map[string]string{
-	"users": `
-	CREATE TABLE users (
-		id INTEGER PRIMARY KEY AUTOINCREMENT,
-		name TEXT NOT NULL,
-		email TEXT UNIQUE NOT NULL
-	);`,
-	"habit": `
-	CREATE TABLE habit (
-		id INTEGER PRIMARY KEY AUTOINCREMENT,
-		name TEXT UNIQUE NOT NULL
-	);`,
-	"activity": `
-	CREATE TABLE activity (
-		id INTEGER PRIMARY KEY AUTOINCREMENT,
-		date TEXT NOT NULL,  -- YYYY-MM-DD format (e.g., '2023-10-27')
-		is_completed INTEGER NOT NULL, -- 0 for false, 1 for true (boolean)
-		habit_name TEXT NOT NULL,
-		FOREIGN KEY (habit_name) REFERENCES habit(name) ON DELETE CASCADE,
-	    UNIQUE (habit_name, date, is_completed) -- Added unique constraint here
-	);
-	CREATE INDEX idx_activity_habit_name ON activity (habit_name);
-	CREATE INDEX idx_activity_date ON activity (date);`,
-}
-
-// Define expected column definitions for schema validation for each table
-var allExpectedColumns = map[string]map[string]string{
-	"users": {
-		"id":    "INTEGER",
-		"name":  "TEXT",
-		"email": "TEXT",
-	},
-	"habit": {
-		"id":   "INTEGER",
-		"name": "TEXT",
-	},
-	"activity": {
-		"id":           "INTEGER",
-		"date":         "TEXT",
-		"is_completed": "INTEGER",
-		"habit_name":   "TEXT",
-	},
-}
-
 func init() {
-	// Define the database file name
-	dbFileName := "habits.sqlite"
-
 	// Check if the database file exists
 	dbExists := true
 	if _, err := os.Stat(dbFileName); os.IsNotExist(err) {
