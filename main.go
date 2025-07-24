@@ -6,16 +6,13 @@ import (
 	"time"
 )
 
-var now = time.Now()
+var (
+	now          = time.Now()
+	monthsPerRow = 3
+)
 
-func generateMonths(lookbackMonths int) []time.Time {
-	allMonths := make([]time.Time, lookbackMonths)
-	for i := 0; i < lookbackMonths; i++ {
-		allMonths[lookbackMonths-1-i] = now.AddDate(0, -i, 0)
-	}
-
-	return allMonths
-}
+// [TODO] month/year color
+// [TODO] replace highlighted date color
 
 func main() {
 	// Define dates to highlight (example: today, tomorrow, and a date in the past)
@@ -30,7 +27,6 @@ func main() {
 	allMonths := generateMonths(4)
 
 	// Define the number of months per row
-	monthsPerRow := 3
 
 	// Define the fixed width of each calendar element (7 days * 3 chars/day = 21 chars for day grid)
 	// The header "Su Mo Tu We Th Fr Sa  " is 22 chars. Let's make our element width 22.
@@ -208,3 +204,27 @@ func calculateDisplayedWidth(s string) int {
 	}
 	return width
 }
+
+// time period
+func generateMonths(lookbackMonths int) []time.Time {
+	allMonths := make([]time.Time, lookbackMonths)
+	for i := 0; i < lookbackMonths; i++ {
+		allMonths[lookbackMonths-1-i] = now.AddDate(0, -i, 0)
+	}
+
+	return removePreviousYearDates(allMonths)
+}
+
+func removePreviousYearDates(dates []time.Time) []time.Time {
+	var currentYearDates []time.Time
+	currentYear := now.Year()
+
+	for _, date := range dates {
+		if date.Year() == currentYear {
+			currentYearDates = append(currentYearDates, date)
+		}
+	}
+	return currentYearDates
+}
+
+//
