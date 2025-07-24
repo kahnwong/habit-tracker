@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/jedib0t/go-pretty/v6/table"
+
 	"github.com/kahnwong/habit-tracker/calendar"
 
 	"github.com/rs/zerolog/log"
@@ -18,7 +19,7 @@ func Create(args []string) {
 	} else {
 		err := Habit.CreateHabit(args[0])
 		if err != nil {
-			log.Error().Msgf("Habit %s already exists", args[0])
+			log.Info().Msgf("Habit %s already exists", args[0])
 		} else {
 			log.Info().Msgf("Habit %s created", args[0])
 		}
@@ -68,8 +69,7 @@ func ShowHabitActivity(lookbackMonths int, args []string) {
 	if validateHabit(args) {
 		activities, err = Habit.GetHabitActivity(args[0], lookbackMonths)
 		if err != nil {
-			log.Info().Msgf("No activities found for habit: %s", args[0])
-			os.Exit(0)
+			log.Fatal().Msgf("Error fetching activities for habit: %s", args[0])
 		}
 	}
 
@@ -94,14 +94,11 @@ func ShowHabitActivity(lookbackMonths int, args []string) {
 	calendar.RenderCalendarView(lookbackMonths, dates)
 }
 
-func ShowPeriodActivity(period string, args []string) {
+func ShowPeriodActivity(period string) {
 	// fetch activities
-	var activities []Activity
-	var err error
-	activities, err = Habit.GetPeriodActivity(period)
+	activities, dates, err := Habit.GetPeriodActivity(period)
 	if err != nil {
-		log.Info().Msgf("No activities found for period: %s", period)
-		os.Exit(0)
+		log.Fatal().Msgf("Error fetching activities for period: %s", period)
 	}
 
 	if len(activities) == 0 {
@@ -109,30 +106,44 @@ func ShowPeriodActivity(period string, args []string) {
 		os.Exit(0)
 	}
 
-	// render table // [TODO] display other unspecified habits
-	tw := table.NewWriter()
-	tw.SetOutputMirror(os.Stdout)
+	// render table
+	t := table.NewWriter()
+	t.SetOutputMirror(os.Stdout)
 
-	//// order results
-	orderedLabels := []string{"Foo", "Bar", "Baz"}
-	dataMap := make(map[string]Activity)
-	for _, item := range activities {
-		dataMap[item.HabitName] = item
+	//// set header
+	headers := append([]string{""}, dates...)
+	var headerRow table.Row
+	for _, h := range headers {
+		headerRow = append(headerRow, h)
 	}
+	t.AppendHeader(headerRow)
 
-	for _, label := range orderedLabels {
-		if _, ok := dataMap[label]; ok {
-			tw.AppendRow(table.Row{fmt.Sprintf("%-6s", label), "✓"}) // %-6s for left-alignment and padding
+	/// unwind data
+	isCompletedIcon := map[int64]string{0: "x", 1: "✓"}
+	for _, activity := range activities {
+		var elems []interface{}
+		elems = append(elems, fmt.Sprintf("%-6s", activity["habit_name"])) // %-6s for left-alignment and padding
+
+		for _, date := range dates {
+			if intVal, ok := activity[date].(int64); ok {
+				elems = append(elems, fmt.Sprintf("%6s", isCompletedIcon[intVal])) // %-4s for center alignment
+			} else {
+				log.Error().Err(err).Msgf("Failed to cast to int. Value is of type %T\n", activity[date])
+			}
 		}
+
+		t.AppendRows([]table.Row{
+			elems,
+		})
 	}
 
 	//// styling
-	tw.SetStyle(table.Style{
+	t.SetStyle(table.Style{
 		Options: table.OptionsNoBordersAndSeparators,
 	})
 
 	// render
-	tw.Render()
+	t.Render()
 }
 
 // utils

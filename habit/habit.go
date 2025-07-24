@@ -2,7 +2,10 @@ package habit
 
 import (
 	"fmt"
+	"strings"
 	"time"
+
+	"github.com/rs/zerolog/log"
 
 	"github.com/jmoiron/sqlx"
 	_ "github.com/mattn/go-sqlite3"
@@ -13,6 +16,8 @@ var Habit *Application
 type Application struct {
 	DB *sqlx.DB
 }
+
+type periodActivityRow map[string]interface{} // for periodActivity
 
 func (Habit *Application) CreateHabit(habit string) error {
 	query := `INSERT INTO habit (name) VALUES (?)`
@@ -57,14 +62,15 @@ func (Habit *Application) Undo(activity Activity) error {
 }
 
 func (Habit *Application) GetHabitActivity(habitName string, lookbackMonths int) ([]Activity, error) {
+	lookbackStart := time.Now().AddDate(0, -lookbackMonths, 0)
+	var completedActivities []Activity
+
 	query := `
 	SELECT date, is_completed, habit_name
 	FROM activity
 	WHERE is_completed = 1 AND date >= ? AND habit_name = ?
 	ORDER BY date;`
 
-	lookbackStart := time.Now().AddDate(0, -lookbackMonths, 0)
-	var completedActivities []Activity
 	err := Habit.DB.Select(&completedActivities, query, lookbackStart, habitName)
 	if err != nil {
 		return completedActivities, fmt.Errorf("error fetching activity for habit '%s'", habitName)
@@ -73,26 +79,65 @@ func (Habit *Application) GetHabitActivity(habitName string, lookbackMonths int)
 	return completedActivities, nil
 }
 
-func (Habit *Application) GetPeriodActivity(period string) ([]Activity, error) {
-	query := `
-	SELECT date, is_completed, habit_name
-	FROM activity
-	WHERE is_completed = 1 AND date >= ?
-	ORDER BY date;`
-
+func (Habit *Application) GetPeriodActivity(period string) ([]periodActivityRow, []string, error) {
 	var lookbackStart time.Time
 	var now = time.Now()
+	var dates []string
+
 	switch period {
 	case "today":
 		lookbackStart = time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location())
+		dates = []string{lookbackStart.Format("2006-01-02")}
 	}
-	lookbackStartStr := lookbackStart.Format("2006-01-02")
 
-	var completedActivities []Activity
-	err := Habit.DB.Select(&completedActivities, query, lookbackStartStr)
+	// prep query
+	selectClauses := []string{"habit_name"}
+	for _, date := range dates {
+		selectClauses = append(selectClauses, fmt.Sprintf("SUM(CASE WHEN date = '%s' THEN is_completed ELSE 0 END) AS \"%s\"", date, date))
+	}
+	selectStmt := strings.Join(selectClauses, ",\n    ")
+
+	baseQuery := fmt.Sprintf(`
+	SELECT
+	   %s
+	FROM
+	   activity
+	WHERE
+	   date IN (?)
+	GROUP BY
+	   habit_name
+	ORDER BY
+	   habit_name;`, selectStmt)
+
+	query, args, err := sqlx.In(baseQuery, dates)
 	if err != nil {
-		return completedActivities, fmt.Errorf("error fetching activity for period '%s'", period)
+		return nil, dates, fmt.Errorf("error preparing query with sqlx.In: %w", err)
 	}
 
-	return completedActivities, nil
+	// execute query
+	query = Habit.DB.Rebind(query)
+	rows, err := Habit.DB.Queryx(query, args...)
+	if err != nil {
+		return nil, dates, fmt.Errorf("error executing query: %w", err)
+	}
+	defer func(rows *sqlx.Rows) {
+		err := rows.Close()
+		if err != nil {
+			log.Error().Err(err).Msg("error closing rows")
+		}
+	}(rows)
+
+	// parse
+	var completedActivities []periodActivityRow
+	for rows.Next() {
+		row := make(periodActivityRow)
+		err = rows.MapScan(row)
+		if err != nil {
+			return nil, dates, fmt.Errorf("error scanning row: %w", err)
+		}
+
+		completedActivities = append(completedActivities, row)
+	}
+
+	return completedActivities, dates, nil
 }
