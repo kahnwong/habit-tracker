@@ -1,4 +1,4 @@
-package db
+package habit
 
 var tableSchemas = map[string]string{
 	"users": `

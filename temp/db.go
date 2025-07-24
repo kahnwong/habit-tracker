@@ -1,21 +1,25 @@
-package db
+package temp
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
 	"github.com/jmoiron/sqlx"
+	_ "github.com/mattn/go-sqlite3"
 	"log"
-	"os"
 	"time"
 )
 
-var dbFileName = "habits.sqlite" // [TODO] set via config (plain yaml, not sops)
+// [TODO] undo activity (today only)
 // [TODO] replace logs with zerolog
 
+var db *sqlx.DB
+
 func Foo() error {
-	db, err := sqlx.Connect("sqlite3", "habits.sqlite")
+
+	db, err := sqlx.Connect("sqlite3", dbFileName)
 	if err != nil {
-		log.Fatalf("Error opening database connection: %v", err)
+		log.Fatalf("Error opening database connection: %v", err) // [TODO] replace
 	}
 
 	habits := []string{"Drink Water", "Exercise", "Read Book", "Meditate"}
@@ -83,24 +87,6 @@ func Foo() error {
 }
 
 func init() {
-	dbExists := isDBExists()
-
-	/////////
-	// Open the database connection using sqlx.Connect
-	// If the file does not exist, the sqlite3 driver will create it upon connection.
-	db, err := sqlx.Connect("sqlite3", dbFileName)
-	if err != nil {
-		log.Fatalf("Error opening database connection: %v", err)
-	}
-	// Ensure the database connection is closed when the main function exits
-	defer func() {
-		if err := db.Close(); err != nil {
-			log.Printf("Error closing database connection: %v", err)
-		}
-		log.Println("Database connection closed.")
-	}()
-
-	log.Println("Successfully connected to SQLite database.")
 
 	// Iterate through all defined table schemas
 	for tableName, schema := range tableSchemas {
@@ -199,13 +185,37 @@ func validateSchema(db *sqlx.DB, tableName string, expectedColumns map[string]st
 }
 
 // ///////
-func isDBExists() bool {
-	dbExists := true
-	if _, err := os.Stat(dbFileName); os.IsNotExist(err) {
-		dbExists = false
-		log.Printf("Database file '%s' not found. It will be created.", dbFileName) // [TODO] replace
-	} else if err != nil {
-		log.Fatalf("Error checking database file status: %v", err) // [TODO] replace
+
+func main() {
+
+	defer func() {
+		if err := app.DB.Close(); err != nil {
+			log.Printf("Error closing database: %v", err)
+		}
+	}()
+
+	fmt.Println("Application ready. Performing some DB operations...")
+
+	// Example usage
+	ctx := context.Background() // Use context for all DB operations
+
+	// Insert a user
+	err := app.CreateUser(ctx, "Alice", "alice@example.com")
+	if err != nil {
+		log.Printf("Error creating user: %v", err)
 	}
-	return dbExists
+
+	// Get a user
+	user, err := app.GetUserByID(ctx, 1)
+	if err != nil {
+		log.Printf("Error getting user: %v", err)
+	} else {
+		fmt.Printf("Fetched user: %+v\n", user)
+	}
+
+	// Try inserting a duplicate email to see UNIQUE constraint in action
+	err = app.CreateUser(ctx, "Bob", "alice@example.com")
+	if err != nil {
+		log.Printf("Expected error inserting duplicate email: %v", err)
+	}
 }
