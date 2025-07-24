@@ -2,7 +2,6 @@ package temp
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/mattn/go-sqlite3"
@@ -88,111 +87,9 @@ func Foo() error {
 
 func init() {
 
-	// Iterate through all defined table schemas
-	for tableName, schema := range tableSchemas {
-		if !dbExists {
-			// Database file did not exist, so create the table
-			log.Printf("Creating table '%s'...", tableName)
-			_, err = db.Exec(schema)
-			if err != nil {
-				log.Fatalf("Error creating table '%s': %v", tableName, err)
-			}
-			log.Printf("Table '%s' created successfully!", tableName)
-		} else {
-			// Database file existed, validate its schema
-			log.Printf("Database file '%s' found. Validating schema for table '%s'...", dbFileName, tableName)
-			expectedCols, ok := allExpectedColumns[tableName]
-			if !ok {
-				log.Printf("Warning: No expected column definition found for table '%s'. Skipping schema validation for this table.", tableName)
-				continue
-			}
-			if err := validateSchema(db, tableName, expectedCols); err != nil {
-				log.Fatalf("Schema validation failed for table '%s': %v", tableName, err)
-			}
-			log.Printf("Schema for table '%s' validated successfully.", tableName)
-		}
-	}
-	log.Println("All tables processed successfully.")
 }
-
-// tableExists checks if a given table exists in the database.
-func tableExists(db *sqlx.DB, tableName string) (bool, error) {
-	var count int
-	// Query sqlite_master to check for the table's existence
-	query := `SELECT count(*) FROM sqlite_master WHERE type='table' AND name=?`
-	err := db.Get(&count, query, tableName)
-	if err != nil {
-		return false, fmt.Errorf("error checking if table '%s' exists: %w", tableName, err)
-	}
-	return count > 0, nil
-}
-
-// validateSchema validates the schema of a specified table against a map of expected columns.
-// It checks if the table exists and if it has the expected columns with correct types.
-func validateSchema(db *sqlx.DB, tableName string, expectedColumns map[string]string) error {
-	// First, check if the table itself exists
-	exists, err := tableExists(db, tableName)
-	if err != nil {
-		return err
-	}
-	if !exists {
-		return fmt.Errorf("table '%s' does not exist in the database", tableName)
-	}
-
-	// Query table info using PRAGMA to get column details
-	rows, err := db.Queryx(fmt.Sprintf("PRAGMA table_info(%s);", tableName))
-	if err != nil {
-		return fmt.Errorf("error querying table info for '%s': %w", tableName, err)
-	}
-	defer rows.Close()
-
-	// Map to store found columns and their types
-	foundColumns := make(map[string]string)
-	for rows.Next() {
-		var (
-			cid        int
-			name       string
-			columnType string // column type (e.g., TEXT, INTEGER)
-			notnull    int
-			dflt_value sql.NullString // Default value, can be NULL
-			pk         int            // Primary key flag
-		)
-		// Scan the results from PRAGMA table_info
-		if err := rows.Scan(&cid, &name, &columnType, &notnull, &dflt_value, &pk); err != nil {
-			return fmt.Errorf("error scanning table info row: %w", err)
-		}
-		foundColumns[name] = columnType
-	}
-
-	// Validate each expected column against the found columns
-	for colName, expectedType := range expectedColumns {
-		foundType, ok := foundColumns[colName]
-		if !ok {
-			return fmt.Errorf("missing expected column: '%s'", colName)
-		}
-		// For simplicity, we'll check for an exact type match.
-		// SQLite's type affinity can sometimes return slightly different names
-		// (e.g., VARCHAR instead of TEXT), but for basic types, this is usually sufficient.
-		if foundType != expectedType {
-			return fmt.Errorf("column '%s' has unexpected type: expected '%s', got '%s'", colName, expectedType, foundType)
-		}
-	}
-
-	// Optionally, you might want to check for extra columns not in expectedColumns,
-	// but for now, we only ensure all expected columns are present and correct.
-
-	return nil // Schema is valid
-}
-
-// ///////
 
 func main() {
-
-	defer func() {
-		if err := app.DB.Close(); err != nil {
-			log.Printf("Error closing database: %v", err)
-		}
-	}()
 
 	fmt.Println("Application ready. Performing some DB operations...")
 
