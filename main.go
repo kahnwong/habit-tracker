@@ -7,32 +7,30 @@ import (
 )
 
 func main() {
-	now := time.Now() // July 24, 2025
+	now := time.Now()
 
 	// Define dates to highlight (example: today, tomorrow, and a date in the past)
 	highlightDates := []time.Time{
 		now,
-		now.AddDate(0, 0, 1), // July 25, 2025
+		now.AddDate(0, 0, 1),
 		time.Date(2025, time.June, 15, 0, 0, 0, 0, time.Local),
-		time.Date(2025, time.August, 20, 0, 0, 0, 0, time.Local), // Another highlight for a 4th month example
-		time.Date(2025, time.May, 10, 0, 0, 0, 0, time.Local),    // Highlight for the 3rd last month
+		time.Date(2025, time.August, 20, 0, 0, 0, 0, time.Local),
+		time.Date(2025, time.May, 10, 0, 0, 0, 0, time.Local),
 	}
 
-	// Get the last four months for demonstration (current month + 3 previous = 4 months total)
-	// If now is July, this will be April, May, June, July.
+	// Get the last four months for demonstration
 	numMonthsToDisplay := 12
 	allMonths := make([]time.Time, numMonthsToDisplay)
 	for i := 0; i < numMonthsToDisplay; i++ {
-		// Populate in reverse to get chronological order (earliest to latest)
 		allMonths[numMonthsToDisplay-1-i] = now.AddDate(0, -i, 0)
 	}
 
 	// Define the number of months per row
 	monthsPerRow := 3
 
-	// Define the fixed width of each calendar element (7 days * 3 chars/day = 21 chars for "XX " days.
-	// We'll aim for a total width that comfortably holds "Su Mo Tu We Th Fr Sa  " (22 chars)
-	const calendarElementRenderedWidth = 22 // "Su Mo Tu We Th Fr Sa  " is 22 chars
+	// Define the fixed width of each calendar element (7 days * 3 chars/day = 21 chars for day grid)
+	// The header "Su Mo Tu We Th Fr Sa  " is 22 chars. Let's make our element width 22.
+	const calendarElementRenderedWidth = 22
 	const paddingBetweenCalendars = 3
 
 	// Process months in blocks of 'monthsPerRow'
@@ -51,14 +49,14 @@ func main() {
 			rightPad := titlePadding - leftPad
 			fmt.Printf("%s%s%s", strings.Repeat(" ", leftPad), title, strings.Repeat(" ", rightPad))
 
-			if idx < len(currentBlockMonths)-1 { // Don't add padding after the last month in the row
+			if idx < len(currentBlockMonths)-1 {
 				fmt.Printf("%s", strings.Repeat(" ", paddingBetweenCalendars))
 			}
 		}
 		fmt.Println()
 
 		// --- Print Weekday Headers ---
-		for idx, _ := range currentBlockMonths {
+		for idx := range currentBlockMonths {
 			fmt.Printf("Su Mo Tu We Th Fr Sa  ") // This is exactly 22 chars
 			if idx < len(currentBlockMonths)-1 {
 				fmt.Printf("%s", strings.Repeat(" ", paddingBetweenCalendars))
@@ -88,17 +86,17 @@ func main() {
 
 			daysInMonth := getDaysInMonth(m.Year(), m.Month())
 
-			// This inner slice will hold all formatted day strings for this month, including leading/trailing blanks
 			currentMonthDays := make([]string, numWeeks*7)
 			for k := 0; k < offset; k++ {
-				currentMonthDays[k] = "  " // Pad initial empty spaces. Each "  " is 2 chars. Day itself is 2 chars, then space. So day takes 3. "  " means "  " + " " = 3
+				currentMonthDays[k] = "   " // Each "day slot" is 3 chars wide
 			}
 			for day := 1; day <= daysInMonth; day++ {
 				currentDay := time.Date(m.Year(), m.Month(), day, 0, 0, 0, 0, time.Local)
+				dayStr := fmt.Sprintf("%2d", day) // Format as " 1" or "10"
 				if isHighlighted(currentDay, highlightDates) {
-					currentMonthDays[offset+day-1] = fmt.Sprintf("\033[31m%2d\033[0m", day) // Red color, takes 2 chars for day, ANSI codes don't count
+					currentMonthDays[offset+day-1] = fmt.Sprintf("\033[31m%s\033[0m", dayStr) // Store just the formatted date with color codes
 				} else {
-					currentMonthDays[offset+day-1] = fmt.Sprintf("%2d", day) // Takes 2 chars
+					currentMonthDays[offset+day-1] = dayStr // Store just the formatted date
 				}
 			}
 			monthDaysBlock[j] = currentMonthDays
@@ -110,34 +108,45 @@ func main() {
 				var weekLineBuilder strings.Builder
 				for dayOfWeek := 0; dayOfWeek < 7; dayOfWeek++ {
 					idxInDays := week*7 + dayOfWeek
-					if idxInDays < len(days) && days[idxInDays] != "" {
-						// Each day slot, whether it's a number or "  ", needs to be 3 characters wide
-						// If highlighted, the ANSI codes add invisible characters, but the displayed content is 2 chars.
-						// So, we need to add the trailing space explicitly.
-						// Example: " 1 ", "10 ", "   "
-						if strings.Contains(days[idxInDays], "\033[") { // Is it a highlighted string?
-							weekLineBuilder.WriteString(days[idxInDays]) // Add the color codes and the number
-							// The displayed width is 2 chars. We need 1 more space for the 3-char slot.
-							weekLineBuilder.WriteString(" ")
-						} else {
-							weekLineBuilder.WriteString(fmt.Sprintf("%2s ", days[idxInDays])) // Ensure 2-char content + 1 space
-						}
-					} else {
-						weekLineBuilder.WriteString("   ") // 3 spaces for an empty day slot
+					dayContent := ""
+					if idxInDays < len(days) {
+						dayContent = days[idxInDays]
+					}
+
+					// Explicitly ensure each day slot consumes 3 characters.
+					// ANSI escape codes add length to the string but not to the displayed width.
+					// We need to account for the *displayed* width.
+					displayLength := calculateDisplayedWidth(dayContent)
+
+					// Prepend spaces to center the number within its 3-character slot.
+					// Or just ensure it's left-aligned and padded right. "%2s" already handles leading space.
+					// We just need a trailing space if the content itself (like " 1" or "10") is 2 chars.
+					if displayLength == 2 { // This is a " 1" or "10"
+						weekLineBuilder.WriteString(dayContent + " ")
+					} else if displayLength == 1 { // This shouldn't happen with "%2d" but as a fallback
+						weekLineBuilder.WriteString(" " + dayContent + " ") // Center single digit if it somehow appears
+					} else { // This is either an empty slot "   " or already correctly formatted
+						weekLineBuilder.WriteString(dayContent) // Use as is, assuming it's "   " or already 3 chars
 					}
 				}
-				// Pad the entire week string to ensure it's calendarElementRenderedWidth (22) characters long
-				// before adding the inter-calendar padding.
-				// The actual displayed length of the string from weekLineBuilder.String() will be calendarElementRenderedWidth-1 (21)
-				// because it does not include the last space that "Su Mo Tu We Th Fr Sa  " includes.
-				// Let's ensure it's always 22 by adding one more space at the end.
+				// After building the 7-day string for the week, pad it to the full calendar element width.
 				renderedWeekLine := weekLineBuilder.String()
+				// The intended displayed width of 7 days * 3 chars/day = 21 chars.
+				// Our overall calendarElementRenderedWidth is 22 (to match "Su Mo Tu We Th Fr Sa  ").
+				// So, we need to ensure the end of the line has one extra space.
+				// However, if the last day of the month falls on a Saturday and there's no trailing " " in its slot,
+				// the renderedWeekLine might be 20 chars long instead of 21 (e.g., " 1  2  3  4  5  6 7").
+				// Let's ensure the total displayed width for the day grid part is 21, then add the final space.
+
+				// Calculate actual displayed width of the built string, ignoring ANSI codes
+				actualDisplayedWidth := calculateDisplayedWidth(renderedWeekLine)
+
 				fmt.Print(renderedWeekLine)
-				// The "Su Mo Tu We Th Fr Sa  " header is 22 chars. Our days are 7 * 3 = 21. Plus the final space makes 22.
-				// If renderedWeekLine.Len() is 21, and we need 22, add one more space.
-				if len(renderedWeekLine) < calendarElementRenderedWidth {
-					fmt.Print(strings.Repeat(" ", calendarElementRenderedWidth-len(renderedWeekLine)))
+				// Pad the remaining space up to 21 (for the 7 days) and then add the final fixed space.
+				if actualDisplayedWidth < calendarElementRenderedWidth-1 { // calendarElementRenderedWidth - 1 because the header ends with "  "
+					fmt.Print(strings.Repeat(" ", (calendarElementRenderedWidth-1)-actualDisplayedWidth))
 				}
+				fmt.Print(" ") // The fixed trailing space to match header width
 
 				// Add padding between calendar elements, but not after the last one in the row
 				if idx < len(monthDaysBlock)-1 {
@@ -178,4 +187,20 @@ func isHighlighted(date time.Time, highlightDates []time.Time) bool {
 		}
 	}
 	return false
+}
+
+// calculateDisplayedWidth calculates the visible width of a string, ignoring ANSI escape codes.
+func calculateDisplayedWidth(s string) int {
+	inEscape := false
+	width := 0
+	for _, r := range s {
+		if r == '\033' {
+			inEscape = true
+		} else if inEscape && r == 'm' {
+			inEscape = false
+		} else if !inEscape {
+			width++
+		}
+	}
+	return width
 }
