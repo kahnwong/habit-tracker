@@ -6,14 +6,14 @@ import (
 )
 
 // [TODO] autocomplete habit names
-var showCmd = &cobra.Command{
-	Use:   "show",
-	Short: "Show habit stats for the last 3 months",
+var showYearCmd = &cobra.Command{
+	Use:   "show-year",
+	Short: "Show habit stats for current year",
 	Run: func(cmd *cobra.Command, args []string) {
-		habit.Show(3, args)
+		habit.Show(12, args)
 	},
 }
 
 func init() {
-	rootCmd.AddCommand(showCmd)
+	rootCmd.AddCommand(showYearCmd)
 }
