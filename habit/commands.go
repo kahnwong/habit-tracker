@@ -57,14 +57,14 @@ func Undo(args []string) { // some chunks are duplicated from `Do()`
 	}
 }
 
-func GetActivities(args []string) []Activity {
+func GetActivities(lookbackMonths int, args []string) []Activity {
 	var activities []Activity
 	var err error
 	if validateHabit(args) {
-		activities, err = Habit.GetActivity(args[0], 3)
+		activities, err = Habit.GetActivity(args[0], lookbackMonths)
 		if err != nil {
 			log.Info().Msgf("No activities found for habit: %s", args[0])
-			os.Exit(1)
+			os.Exit(0)
 		}
 	}
 

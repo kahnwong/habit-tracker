@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	"fmt"
+	"os"
 	"time"
 
 	"github.com/kahnwong/habit-tracker/habit"
@@ -17,23 +17,28 @@ var showCmd = &cobra.Command{
 	Use:   "show",
 	Short: "Show habit stats",
 	Run: func(cmd *cobra.Command, args []string) {
-		activities := habit.GetActivities(args)
+		lookbackMonths := 4
+
+		// fetch activities
+		activities := habit.GetActivities(lookbackMonths, args)
 		if len(activities) == 0 {
 			log.Info().Msgf("No activities found for habit: %s", args[0])
-		}
-		fmt.Println(activities) // [TODO] WIP
-
-		///
-		highlightDates := []time.Time{
-			time.Date(2025, time.June, 15, 0, 0, 0, 0, time.Local),
-			time.Date(2025, time.August, 20, 0, 0, 0, 0, time.Local),
-			time.Date(2025, time.May, 10, 0, 0, 0, 0, time.Local),
-			time.Date(2025, time.July, 10, 0, 0, 0, 0, time.Local),
+			os.Exit(0)
 		}
 
-		calendar.RenderCalendarView(3, highlightDates)
+		// convert to time object
+		var dates []time.Time
+		layout := "2006-01-02"
+		for _, a := range activities {
+			t, err := time.Parse(layout, a.Date)
+			if err != nil {
+				log.Error().Msgf("Error parsing date: %s", a.Date)
+				continue
+			}
+			dates = append(dates, t)
+		}
 
-		fmt.Printf("----%s\n", time.Now()) // debug
+		calendar.RenderCalendarView(lookbackMonths, dates)
 	},
 }
 
