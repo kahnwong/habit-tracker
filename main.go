@@ -2,94 +2,105 @@ package main
 
 import (
 	"fmt"
-	"os"
-	"strconv"
-	"strings"
 	"time"
-
-	"github.com/fatih/color"
 )
 
-// ANSI escape codes for resetting text attributes
-const reset = "\033[0m"
-
 func main() {
-	// Parse command-line arguments for month and year
-	month, year := parseArgs()
+	now := time.Now()
 
-	// If no arguments, display current month/year
-	if month == 0 || year == 0 {
-		now := time.Now()
-		month = int(now.Month())
-		year = now.Year()
+	// Get the last three months
+	months := make([]time.Time, 3)
+	for i := 0; i < 3; i++ {
+		months[2-i] = now.AddDate(0, -i, 0)
 	}
 
-	drawCalendar(month, year)
-}
-
-// parseArgs parses command-line arguments for month and year.
-// It expects "go run your_program.go [month] [year]".
-func parseArgs() (int, int) {
-	args := make([]string, 0)
-	// Skip the program name itself
-	if len(os.Args) > 1 {
-		args = os.Args[1:]
+	// Print headers
+	for _, m := range months {
+		fmt.Printf("%20s", m.Format("January 2006"))
 	}
-
-	month, year := 0, 0
-	if len(args) >= 1 {
-		m, err := strconv.Atoi(args[0])
-		if err == nil && m >= 1 && m <= 12 {
-			month = m
-		}
-	}
-	if len(args) >= 2 {
-		y, err := strconv.Atoi(args[1])
-		if err == nil && y >= 1900 { // Arbitrary sensible lower bound for year
-			year = y
-		}
-	}
-	return month, year
-}
-
-// drawCalendar draws a calendar for the given month and year in the terminal.
-func drawCalendar(month int, year int) {
-	// Get the first day of the month
-	firstOfMonth := time.Date(year, time.Month(month), 1, 0, 0, 0, 0, time.Local)
-	// Get the last day of the month
-	lastOfMonth := firstOfMonth.AddDate(0, 1, -1)
-
-	// Print calendar header
 	fmt.Println()
-	currentMonthYear := fmt.Sprintf("%s %d", firstOfMonth.Format("January"), year)
-	leftPadding := (23 - len(currentMonthYear)) / 2
-	fmt.Printf("%s%s\n", strings.Repeat(" ", leftPadding), currentMonthYear)
 
-	fmt.Printf("")
-	fmt.Println(" Su Mo Tu We Th Fr Sa")
-
-	// Print leading spaces for the first day of the week
-	for i := 0; i < int(firstOfMonth.Weekday()); i++ {
-		fmt.Printf("   ")
+	for _, _ = range months {
+		fmt.Printf("Su Mo Tu We Th Fr Sa  ")
 	}
+	fmt.Println()
 
-	// Print days
-	for day := 1; day <= lastOfMonth.Day(); day++ {
-		currentDay := time.Date(year, time.Month(month), day, 0, 0, 0, 0, time.Local)
-		dayOfWeek := currentDay.Weekday()
+	// Calculate and print days
+	numWeeks := 0
+	for _, m := range months {
+		firstDayOfMonth := time.Date(m.Year(), m.Month(), 1, 0, 0, 0, 0, time.Local)
+		// Go's Weekday starts Sunday=0, Monday=1, ..., Saturday=6
+		// We want to align the first day correctly under its weekday column.
+		offset := int(firstDayOfMonth.Weekday())
 
-		// Highlight current day
-		if currentDay.Year() == time.Now().Year() &&
-			currentDay.Month() == time.Now().Month() &&
-			currentDay.Day() == time.Now().Day() {
-			color.New(color.FgRed, color.Bold).Printf("%3d", day)
+		daysInMonth := 0
+		if m.Month() == time.February {
+			if isLeapYear(m.Year()) {
+				daysInMonth = 29
+			} else {
+				daysInMonth = 28
+			}
+		} else if m.Month() == time.April || m.Month() == time.June ||
+			m.Month() == time.September || m.Month() == time.November {
+			daysInMonth = 30
 		} else {
-			fmt.Printf("%3d", day)
+			daysInMonth = 31
 		}
 
-		if dayOfWeek == time.Saturday {
-			fmt.Println() // New line after Saturday
+		weeks := (offset + daysInMonth + 6) / 7 // Calculate total number of rows needed
+		if weeks > numWeeks {
+			numWeeks = weeks
 		}
 	}
-	fmt.Println("\n") // Extra new line at the end
+
+	// Create a 2D slice to hold the days for each month, padding with empty strings
+	monthDays := make([][]string, len(months))
+	for i, m := range months {
+		firstDayOfMonth := time.Date(m.Year(), m.Month(), 1, 0, 0, 0, 0, time.Local)
+		offset := int(firstDayOfMonth.Weekday())
+
+		daysInMonth := 0
+		if m.Month() == time.February {
+			if isLeapYear(m.Year()) {
+				daysInMonth = 29
+			} else {
+				daysInMonth = 28
+			}
+		} else if m.Month() == time.April || m.Month() == time.June ||
+			m.Month() == time.September || m.Month() == time.November {
+			daysInMonth = 30
+		} else {
+			daysInMonth = 31
+		}
+
+		currentMonthDays := make([]string, numWeeks*7)
+		for j := 0; j < offset; j++ {
+			currentMonthDays[j] = "  " // Pad initial empty spaces
+		}
+		for day := 1; day <= daysInMonth; day++ {
+			currentMonthDays[offset+day-1] = fmt.Sprintf("%2d", day)
+		}
+		monthDays[i] = currentMonthDays
+	}
+
+	// Print the calendar row by row
+	for week := 0; week < numWeeks; week++ {
+		for _, days := range monthDays {
+			for dayOfWeek := 0; dayOfWeek < 7; dayOfWeek++ {
+				idx := week*7 + dayOfWeek
+				if idx < len(days) {
+					fmt.Printf("%s ", days[idx])
+				} else {
+					fmt.Print("   ") // Pad if month is shorter
+				}
+			}
+			fmt.Print(" ") // Space between months
+		}
+		fmt.Println()
+	}
+}
+
+// isLeapYear checks if a year is a leap year.
+func isLeapYear(year int) bool {
+	return (year%4 == 0 && year%100 != 0) || (year%400 == 0)
 }
