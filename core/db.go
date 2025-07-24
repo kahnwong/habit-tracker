@@ -10,8 +10,36 @@ import (
 	_ "github.com/mattn/go-sqlite3" // Import the SQLite driver
 )
 
-func Foo() {
+func Foo() error {
 	fmt.Println("foo")
+
+	db, err := sqlx.Connect("sqlite3", "habits.sqlite")
+	if err != nil {
+		log.Fatalf("Error opening database connection: %v", err)
+	}
+
+	habits := []string{"Drink Water", "Exercise", "Read Book", "Meditate"}
+
+	log.Println("\n--- Inserting sample habits ---")
+	for _, habitName := range habits {
+		// Using INSERT OR IGNORE to prevent errors if the habit already exists (due to UNIQUE constraint)
+		query := `INSERT OR IGNORE INTO habit (name) VALUES (?)`
+		result, err := db.Exec(query, habitName)
+		if err != nil {
+			return fmt.Errorf("error inserting habit '%s': %w", habitName, err)
+		}
+		rowsAffected, err := result.RowsAffected()
+		if err != nil {
+			return fmt.Errorf("error getting rows affected for habit '%s': %w", habitName, err)
+		}
+		if rowsAffected > 0 {
+			log.Printf("Inserted habit: %s", habitName)
+		} else {
+			log.Printf("Habit '%s' already exists, skipped insertion.", habitName)
+		}
+	}
+	log.Println("--- Sample habits insertion complete ---")
+	return nil
 }
 
 // Define expected schemas for all tables
