@@ -14,17 +14,17 @@ import (
 var dbFileName = "habits.sqlite" // [TODO] set via config (plain yaml, not sops)
 
 func init() {
+	// set logs
 	log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
 	zerolog.SetGlobalLevel(zerolog.InfoLevel)
-
 	if os.Getenv("MODE") == "DEBUG" {
 		zerolog.SetGlobalLevel(zerolog.DebugLevel)
 	}
 
+	// init app
 	app := &Application{
 		DB: initDB(),
 	}
-
 	app.InitSchema()
 }
 
@@ -85,10 +85,7 @@ func initDB() *sqlx.DB {
 	return db
 }
 
-// validateSchema validates the schema of a specified table against a map of expected columns.
-// It checks if the table exists and if it has the expected columns with correct types.
 func validateSchema(db *sqlx.DB, tableName string, expectedColumns map[string]string) error {
-	// First, check if the table itself exists
 	exists, err := tableExists(db, tableName)
 	if err != nil {
 		return err
@@ -142,11 +139,9 @@ func validateSchema(db *sqlx.DB, tableName string, expectedColumns map[string]st
 	return nil // Schema is valid
 }
 
-// ///////
-
-// tableExists checks if a given table exists in the database.
 func tableExists(db *sqlx.DB, tableName string) (bool, error) {
 	var count int
+
 	// Query sqlite_master to check for the table's existence
 	query := `SELECT count(*) FROM sqlite_master WHERE type='table' AND name=?`
 	err := db.Get(&count, query, tableName)
