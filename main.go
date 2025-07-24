@@ -7,12 +7,18 @@ import (
 )
 
 var (
-	now          = time.Now()
-	monthsPerRow = 3
+	now = time.Now()
+)
+
+const (
+	monthsPerRow                 = 3
+	calendarElementRenderedWidth = 22
+	paddingBetweenCalendars      = 3
 )
 
 // [TODO] month/year color
 // [TODO] replace highlighted date color
+// [TODO] add generated code disclaimer
 
 func main() {
 	// Define dates to highlight (example: today, tomorrow, and a date in the past)
@@ -23,15 +29,7 @@ func main() {
 		time.Date(2025, time.July, 10, 0, 0, 0, 0, time.Local),
 	}
 
-	// Get the last four months for demonstration
 	allMonths := generateMonths(4)
-
-	// Define the number of months per row
-
-	// Define the fixed width of each calendar element (7 days * 3 chars/day = 21 chars for day grid)
-	// The header "Su Mo Tu We Th Fr Sa  " is 22 chars. Let's make our element width 22.
-	const calendarElementRenderedWidth = 22
-	const paddingBetweenCalendars = 3
 
 	// Process months in blocks of 'monthsPerRow'
 	for i := 0; i < len(allMonths); i += monthsPerRow {
