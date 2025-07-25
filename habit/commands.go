@@ -6,17 +6,11 @@ import (
 	"slices"
 	"time"
 
-	"github.com/fatih/color"
-
 	"github.com/jedib0t/go-pretty/v6/table"
 
 	"github.com/kahnwong/habit-tracker/calendar"
 
 	"github.com/rs/zerolog/log"
-)
-
-var (
-	Cyan = color.New(color.FgHiCyan).SprintFunc()
 )
 
 func Create(args []string) {
@@ -129,7 +123,7 @@ func ShowPeriodActivity(period string) {
 
 	//// unwind data
 	////// %6s for center alignment, has to stay here because color package has fixed bytes
-	isCompletedIcon := map[int64]string{0: fmt.Sprintf("      %s", " "), 1: fmt.Sprintf("      %s", Cyan("✓"))}
+	isCompletedIcon := map[int64]string{0: fmt.Sprintf("      %s", " "), 1: fmt.Sprintf("      %s", "✓")}
 	for _, activity := range activities {
 		var elems []interface{}
 		elems = append(elems, fmt.Sprintf("%-6s", activity["habit_name"])) // %-6s for left-alignment and padding
@@ -152,7 +146,7 @@ func ShowPeriodActivity(period string) {
 	//	Options: table.OptionsNoBordersAndSeparators,
 	//})
 
-	t.SetStyle(table.StyleColoredCyanWhiteOnBlack)
+	t.SetStyle(table.StyleColoredBlackOnCyanWhite)
 
 	// render
 	t.Render()
