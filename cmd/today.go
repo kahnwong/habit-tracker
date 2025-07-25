@@ -5,7 +5,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// [TODO] autocomplete period: today, week
 var todayCmd = &cobra.Command{
 	Use:   "today",
 	Short: "Show habit stats for today",

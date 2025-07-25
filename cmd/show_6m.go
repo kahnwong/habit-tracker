@@ -5,10 +5,10 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// [TODO] autocomplete habit names
 var show6mCmd = &cobra.Command{
-	Use:   "show-6m",
-	Short: "Show habit stats for the last 6 months",
+	Use:               "show-6m",
+	Short:             "Show habit stats for the last 6 months",
+	ValidArgsFunction: HabitsGet,
 	Run: func(cmd *cobra.Command, args []string) {
 		habit.ShowHabitActivity(6, args)
 	},

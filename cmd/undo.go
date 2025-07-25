@@ -5,10 +5,10 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// [TODO] autocomplete habit names
 var undoCmd = &cobra.Command{
-	Use:   "undo",
-	Short: "Untrack a habit",
+	Use:               "undo",
+	Short:             "Untrack a habit",
+	ValidArgsFunction: HabitsGet,
 	Run: func(cmd *cobra.Command, args []string) {
 		habit.Undo(args)
 	},

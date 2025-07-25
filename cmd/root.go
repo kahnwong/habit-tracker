@@ -3,8 +3,20 @@ package cmd
 import (
 	"os"
 
+	"github.com/kahnwong/habit-tracker/habit"
+
 	"github.com/spf13/cobra"
 )
+
+func HabitsGet(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+	var autocomplete []string
+
+	if len(args) == 0 {
+		autocomplete, _ = habit.Habit.GetHabits()
+	}
+
+	return autocomplete, cobra.ShellCompDirectiveNoFileComp
+}
 
 var rootCmd = &cobra.Command{
 	Use:   "habit-tracker",
