@@ -16,8 +16,7 @@ import (
 )
 
 var (
-	Blue  = color.New(color.FgBlue).SprintFunc()
-	Green = color.New(color.FgHiGreen).SprintFunc()
+	Cyan = color.New(color.FgHiCyan).SprintFunc()
 )
 
 func Create(args []string) {
@@ -124,13 +123,13 @@ func ShowPeriodActivity(period string) {
 	headers := append([]string{""}, dates...)
 	var headerRow table.Row
 	for _, h := range headers {
-		headerRow = append(headerRow, fmt.Sprintf("  %s  ", Blue(h)))
+		headerRow = append(headerRow, fmt.Sprintf("  %s  ", h))
 	}
 	t.AppendHeader(headerRow)
 
 	//// unwind data
 	////// %6s for center alignment, has to stay here because color package has fixed bytes
-	isCompletedIcon := map[int64]string{0: fmt.Sprintf("      %s", "x"), 1: fmt.Sprintf("      %s", Green("✓"))}
+	isCompletedIcon := map[int64]string{0: fmt.Sprintf("      %s", " "), 1: fmt.Sprintf("      %s", Cyan("✓"))}
 	for _, activity := range activities {
 		var elems []interface{}
 		elems = append(elems, fmt.Sprintf("%-6s", activity["habit_name"])) // %-6s for left-alignment and padding
@@ -148,10 +147,12 @@ func ShowPeriodActivity(period string) {
 		})
 	}
 
-	//// styling
-	t.SetStyle(table.Style{
-		Options: table.OptionsNoBordersAndSeparators,
-	})
+	////// styling
+	//t.SetStyle(table.Style{
+	//	Options: table.OptionsNoBordersAndSeparators,
+	//})
+
+	t.SetStyle(table.StyleColoredCyanWhiteOnBlack)
 
 	// render
 	t.Render()
