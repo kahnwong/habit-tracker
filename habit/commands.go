@@ -47,7 +47,7 @@ func Do(args []string) {
 		if err != nil {
 			log.Error().Msg("Error logging a habit")
 		} else {
-			log.Info().Msgf("Logged %s for today", args[0])
+			log.Info().Msgf("Logged %s for %s", args[0], date)
 		}
 	} else {
 		log.Error().Msgf("Invalid habit: %s", args[0])

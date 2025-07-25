@@ -108,9 +108,7 @@ func (Habit *Application) GetPeriodActivity(period string) ([]periodActivityRow,
 	FROM
 	   habit AS h
 	LEFT JOIN
-		activity AS a ON h.name = a.habit_name
-	WHERE
-	   a.date IN (?) OR a.date IS NULL -- Important for LEFT JOIN with multiple dates
+		activity AS a ON h.name = a.habit_name AND a.date IN (?)
 	GROUP BY
 	   h.name
 	ORDER BY
