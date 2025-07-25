@@ -35,10 +35,13 @@ func Create(args []string) {
 
 func Do(args []string) {
 	if validateHabit(args) {
-		today := time.Now().Format("2006-01-02")
+		date := time.Now().Format("2006-01-02")
+		if len(args) == 2 {
+			date = args[1]
+		}
 
 		activity := Activity{
-			Date: today, IsCompleted: 1, HabitName: args[0]}
+			Date: date, IsCompleted: 1, HabitName: args[0]}
 
 		err := Habit.Do(activity)
 		if err != nil {
