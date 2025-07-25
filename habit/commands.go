@@ -6,11 +6,18 @@ import (
 	"slices"
 	"time"
 
+	"github.com/fatih/color"
+
 	"github.com/jedib0t/go-pretty/v6/table"
 
 	"github.com/kahnwong/habit-tracker/calendar"
 
 	"github.com/rs/zerolog/log"
+)
+
+var (
+	Blue  = color.New(color.FgBlue).SprintFunc()
+	Green = color.New(color.FgHiGreen).SprintFunc()
 )
 
 func Create(args []string) {
@@ -114,19 +121,20 @@ func ShowPeriodActivity(period string) {
 	headers := append([]string{""}, dates...)
 	var headerRow table.Row
 	for _, h := range headers {
-		headerRow = append(headerRow, fmt.Sprintf("%2s  ", h))
+		headerRow = append(headerRow, fmt.Sprintf("  %s  ", Blue(h)))
 	}
 	t.AppendHeader(headerRow)
 
-	/// unwind data
-	isCompletedIcon := map[int64]string{0: "", 1: "✓"} // [TODO] apply color
+	//// unwind data
+	////// %6s for center alignment, has to stay here because color package has fixed bytes
+	isCompletedIcon := map[int64]string{0: fmt.Sprintf("      %s", "x"), 1: fmt.Sprintf("      %s", Green("✓"))}
 	for _, activity := range activities {
 		var elems []interface{}
 		elems = append(elems, fmt.Sprintf("%-6s", activity["habit_name"])) // %-6s for left-alignment and padding
 
 		for _, date := range dates {
 			if intVal, ok := activity[date].(int64); ok {
-				elems = append(elems, fmt.Sprintf("%6s", isCompletedIcon[intVal])) // %6s for center alignment
+				elems = append(elems, isCompletedIcon[intVal])
 			} else {
 				log.Error().Err(err).Msgf("Failed to cast to int. Value is of type %T\n", activity[date])
 			}
