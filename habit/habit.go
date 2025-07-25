@@ -84,10 +84,15 @@ func (Habit *Application) GetPeriodActivity(period string) ([]periodActivityRow,
 	var now = time.Now()
 	var dates []string
 
+	lookbackStart = time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location())
 	switch period {
 	case "today":
-		lookbackStart = time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location())
 		dates = []string{lookbackStart.Format("2006-01-02")}
+	case "week":
+		lookbackStart = lookbackStart.AddDate(0, 0, -7)
+		for date := lookbackStart; !date.After(now); date = date.AddDate(0, 0, 1) {
+			dates = append(dates, date.Format("2006-01-02"))
+		}
 	}
 
 	// prep query
