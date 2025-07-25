@@ -10,11 +10,17 @@ import (
 	"time"
 
 	"github.com/jmoiron/sqlx"
+	cliBase "github.com/kahnwong/cli-base"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 )
 
-var dbFileName = "habits.sqlite" // [TODO] set via config (plain yaml, not sops)
+type Config struct {
+	Path string `yaml:"PATH"`
+}
+
+var config = cliBase.ReadYaml[Config]("~/.config/habit-tracker/config.yaml")
+var dbFileName = cliBase.ExpandHome(config.Path)
 
 func init() {
 	// set logs
