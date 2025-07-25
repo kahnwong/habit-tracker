@@ -6,7 +6,6 @@ import (
 )
 
 // [TODO] autocomplete period: today, week
-// [TODO] sql should return missing habits
 var weekCmd = &cobra.Command{
 	Use:   "week",
 	Short: "Show habit stats for week",

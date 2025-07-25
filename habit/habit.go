@@ -96,9 +96,9 @@ func (Habit *Application) GetPeriodActivity(period string) ([]periodActivityRow,
 	}
 
 	// prep query
-	selectClauses := []string{"habit_name"}
+	selectClauses := []string{"h.name AS habit_name"}
 	for _, date := range dates {
-		selectClauses = append(selectClauses, fmt.Sprintf("SUM(CASE WHEN date = '%s' THEN is_completed ELSE 0 END) AS \"%s\"", date, date))
+		selectClauses = append(selectClauses, fmt.Sprintf("SUM(CASE WHEN a.date = '%s' THEN a.is_completed ELSE 0 END) AS \"%s\"", date, date))
 	}
 	selectStmt := strings.Join(selectClauses, ",\n    ")
 
@@ -106,13 +106,15 @@ func (Habit *Application) GetPeriodActivity(period string) ([]periodActivityRow,
 	SELECT
 	   %s
 	FROM
-	   activity
+	   habit AS h
+	LEFT JOIN
+		activity AS a ON h.name = a.habit_name
 	WHERE
-	   date IN (?)
+	   a.date IN (?) OR a.date IS NULL -- Important for LEFT JOIN with multiple dates
 	GROUP BY
-	   habit_name
+	   h.name
 	ORDER BY
-	   habit_name;`, selectStmt)
+	   h.name;`, selectStmt)
 
 	query, args, err := sqlx.In(baseQuery, dates)
 	if err != nil {
