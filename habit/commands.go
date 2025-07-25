@@ -114,19 +114,19 @@ func ShowPeriodActivity(period string) {
 	headers := append([]string{""}, dates...)
 	var headerRow table.Row
 	for _, h := range headers {
-		headerRow = append(headerRow, h)
+		headerRow = append(headerRow, fmt.Sprintf("%2s  ", h))
 	}
 	t.AppendHeader(headerRow)
 
 	/// unwind data
-	isCompletedIcon := map[int64]string{0: "x", 1: "✓"}
+	isCompletedIcon := map[int64]string{0: "", 1: "✓"} // [TODO] apply color
 	for _, activity := range activities {
 		var elems []interface{}
 		elems = append(elems, fmt.Sprintf("%-6s", activity["habit_name"])) // %-6s for left-alignment and padding
 
 		for _, date := range dates {
 			if intVal, ok := activity[date].(int64); ok {
-				elems = append(elems, fmt.Sprintf("%6s", isCompletedIcon[intVal])) // %-4s for center alignment
+				elems = append(elems, fmt.Sprintf("%6s", isCompletedIcon[intVal])) // %6s for center alignment
 			} else {
 				log.Error().Err(err).Msgf("Failed to cast to int. Value is of type %T\n", activity[date])
 			}
