@@ -20,11 +20,6 @@ var tableSchemas = map[string]string{
 }
 
 var allExpectedColumns = map[string]map[string]string{
-	"users": {
-		"id":    "INTEGER",
-		"name":  "TEXT",
-		"email": "TEXT",
-	},
 	"habit": {
 		"id":   "INTEGER",
 		"name": "TEXT",
