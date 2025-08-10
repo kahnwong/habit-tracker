@@ -4,7 +4,7 @@ go 1.24.3
 
 require (
 	github.com/fatih/color v1.18.0
-	github.com/jedib0t/go-pretty/v6 v6.6.7
+	github.com/jedib0t/go-pretty/v6 v6.6.8
 	github.com/jmoiron/sqlx v1.4.0
 	github.com/kahnwong/cli-base v0.0.0-20250506033212-029722a13b47
 	github.com/mattn/go-sqlite3 v1.14.29
