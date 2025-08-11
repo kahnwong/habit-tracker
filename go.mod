@@ -7,7 +7,7 @@ require (
 	github.com/jedib0t/go-pretty/v6 v6.6.7
 	github.com/jmoiron/sqlx v1.4.0
 	github.com/kahnwong/cli-base v0.0.0-20250506033212-029722a13b47
-	github.com/mattn/go-sqlite3 v1.14.29
+	github.com/mattn/go-sqlite3 v1.14.31
 	github.com/rs/zerolog v1.34.0
 	github.com/spf13/cobra v1.9.1
 )
