@@ -2,19 +2,36 @@ package habit
 
 import (
 	"fmt"
+	"os"
 	"strings"
 	"time"
 
+	cliBase "github.com/kahnwong/cli-base"
+	sqliteBase "github.com/kahnwong/sqlite-base"
+	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 
 	"github.com/jmoiron/sqlx"
 	_ "github.com/mattn/go-sqlite3"
 )
 
+type Config struct {
+	Path string `yaml:"PATH"`
+}
+
+var config = cliBase.ReadYaml[Config]("~/.config/habit-tracker/config.yaml")
+var dbFileName = cliBase.ExpandHome(config.Path)
+
 var Habit *Application
 
 type Application struct {
 	DB *sqlx.DB
+}
+
+type Activity struct {
+	Date        string `db:"date"`
+	IsCompleted int    `db:"is_completed"` // 0 for false, 1 for true
+	HabitName   string `db:"habit_name"`
 }
 
 type periodActivityRow map[string]interface{} // for periodActivity
@@ -145,4 +162,20 @@ func (Habit *Application) GetPeriodActivity(period string) ([]periodActivityRow,
 	}
 
 	return completedActivities, dates, nil
+}
+
+func init() {
+	// set logs
+	log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
+	zerolog.SetGlobalLevel(zerolog.InfoLevel)
+	if os.Getenv("MODE") == "DEBUG" {
+		zerolog.SetGlobalLevel(zerolog.DebugLevel)
+	}
+
+	// init app
+	dbExists := sqliteBase.IsDBExists(dbFileName)
+	Habit = &Application{
+		DB: sqliteBase.InitDB(dbFileName),
+	}
+	sqliteBase.InitSchema(dbFileName, Habit.DB, tableSchemas, allExpectedColumns, dbExists)
 }
