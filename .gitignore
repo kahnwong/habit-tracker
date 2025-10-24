@@ -1,2 +1,3 @@
 habit-tracker
 *.sqlite
+dist
