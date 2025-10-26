@@ -22,7 +22,7 @@ type Config struct {
 var config = cliBase.ReadYaml[Config]("~/.config/habit-tracker/config.yaml")
 var dbFileName = cliBase.ExpandHome(config.Path)
 
-var Habit = initApp()
+var Habit *Application
 
 type Application struct {
 	DB *sqlx.DB
@@ -164,16 +164,6 @@ func (Habit *Application) GetPeriodActivity(period string) ([]periodActivityRow,
 	return completedActivities, dates, nil
 }
 
-func initApp() *Application {
-	dbExists := sqliteBase.IsDBExists(dbFileName)
-	app := &Application{
-		DB: sqliteBase.InitDB(dbFileName),
-	}
-	sqliteBase.InitSchema(dbFileName, app.DB, tableSchemas, allExpectedColumns, dbExists)
-
-	return app
-}
-
 func init() {
 	// set logs
 	log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
@@ -181,4 +171,11 @@ func init() {
 	if os.Getenv("MODE") == "DEBUG" {
 		zerolog.SetGlobalLevel(zerolog.DebugLevel)
 	}
+
+	// init app
+	dbExists := sqliteBase.IsDBExists(dbFileName)
+	Habit = &Application{
+		DB: sqliteBase.InitDB(dbFileName),
+	}
+	sqliteBase.InitSchema(dbFileName, Habit.DB, tableSchemas, allExpectedColumns, dbExists)
 }
