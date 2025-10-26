@@ -117,7 +117,7 @@ func ShowPeriodActivity(period string) {
 	headers := append([]string{""}, dates...)
 	var headerRow table.Row
 	for _, h := range headers {
-		headerRow = append(headerRow, h)
+		headerRow = append(headerRow, fmt.Sprintf("%s", h))
 	}
 	t.AppendHeader(headerRow)
 
