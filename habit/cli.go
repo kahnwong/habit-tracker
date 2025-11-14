@@ -114,16 +114,23 @@ func ShowPeriodActivity(period string) {
 	t.SetOutputMirror(os.Stdout)
 
 	//// set header
-	headers := append([]string{""}, dates...)
+	var dateFormatted []string
+	for _, d := range dates {
+		v, _ := time.Parse("2006-01-02", d)
+		dateFormatted = append(dateFormatted, v.Format("Mon"))
+	}
+
+	headers := append([]string{""}, dateFormatted...)
+
 	var headerRow table.Row
 	for _, h := range headers {
-		headerRow = append(headerRow, fmt.Sprintf("%s", h))
+		headerRow = append(headerRow, h)
 	}
 	t.AppendHeader(headerRow)
 
 	//// unwind data
 	////// %4s for center alignment, has to stay here because color package has fixed bytes
-	isCompletedIcon := map[int64]string{0: fmt.Sprintf("     %s", " "), 1: fmt.Sprintf("      %s", "✓")}
+	isCompletedIcon := map[int64]string{0: fmt.Sprintf(" %s", " "), 1: fmt.Sprintf(" %s", "✓")}
 	for _, activity := range activities {
 		var elems []interface{}
 		elems = append(elems, fmt.Sprintf("%-4s", activity["habit_name"])) // %-6s for left-alignment and padding
