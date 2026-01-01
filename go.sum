@@ -24,6 +24,8 @@ github.com/kahnwong/cli-base v0.0.0-20250814120046-dde1e03ae9dd h1:uoMoWqIxD3BYo
 github.com/kahnwong/cli-base v0.0.0-20250814120046-dde1e03ae9dd/go.mod h1:rDVsfweQ4kaxpAu+IZtZycFBUAfJX/72cEXpEoRyrVM=
 github.com/kahnwong/cli-base v0.0.0-20250904051131-db1ec9f8394b h1:m64E4AR/NS44V1HVY5o4aP3CxX4rlP78/AKggxCAwks=
 github.com/kahnwong/cli-base v0.0.0-20250904051131-db1ec9f8394b/go.mod h1:rDVsfweQ4kaxpAu+IZtZycFBUAfJX/72cEXpEoRyrVM=
+github.com/kahnwong/cli-base v0.0.0-20260101083643-0c950e574c26 h1:UgeFyOn6aqgOQqPovbiO0n+yll3atq0lk9eqmM5j/mA=
+github.com/kahnwong/cli-base v0.0.0-20260101083643-0c950e574c26/go.mod h1:rDVsfweQ4kaxpAu+IZtZycFBUAfJX/72cEXpEoRyrVM=
 github.com/kahnwong/sqlite-base v0.0.0-20250910074205-02904aea7c98 h1:vliM/8e0/8+/mnCGpcf95qqw1hDLQ8Jef+/LUeOR6Ow=
 github.com/kahnwong/sqlite-base v0.0.0-20250910074205-02904aea7c98/go.mod h1:/ddD0Cy/4+kOrFbGKM9ML/MoZkgQXRy5VxOdw6Z/0fs=
 github.com/kahnwong/sqlite-base v0.0.0-20251113090220-6edcf6953bda h1:XushoR/nw08GfMYpn27Ys0W3P3CEYGxs3uRzugXsYSQ=
