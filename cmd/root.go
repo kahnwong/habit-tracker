@@ -3,7 +3,7 @@ package cmd
 import (
 	"os"
 
-	"github.com/kahnwong/habit-tracker/habit"
+	"github.com/kahnwong/habit-tracker/internal/habit"
 
 	"github.com/spf13/cobra"
 )

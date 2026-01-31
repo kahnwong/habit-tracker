@@ -19,8 +19,8 @@ type Config struct {
 	Path string `yaml:"PATH"`
 }
 
-var config = cliBase.ReadYaml[Config]("~/.config/habit-tracker/config.yaml")
-var dbFileName = cliBase.ExpandHome(config.Path)
+var config *Config
+var dbFileName string
 
 var Habit *Application
 
@@ -172,10 +172,34 @@ func init() {
 		zerolog.SetGlobalLevel(zerolog.DebugLevel)
 	}
 
-	// init app
-	dbExists := sqliteBase.IsDBExists(dbFileName)
-	Habit = &Application{
-		DB: sqliteBase.InitDB(dbFileName),
+	// init config
+	var err error
+	config, err = cliBase.ReadYaml[Config]("~/.config/habit-tracker/config.yaml")
+	if err != nil {
+		log.Fatal().Err(err).Msg("failed to read config")
 	}
-	sqliteBase.InitSchema(dbFileName, Habit.DB, tableSchemas, allExpectedColumns, dbExists)
+
+	dbFileName, err = cliBase.ExpandHome(config.Path)
+	if err != nil {
+		log.Fatal().Err(err).Msg("failed to expand home path")
+	}
+
+	// init app
+	dbExists, err := sqliteBase.IsDBExists(dbFileName)
+	if err != nil {
+		log.Fatal().Err(err).Msg("failed to check if database exists")
+	}
+
+	db, err := sqliteBase.InitDB(dbFileName)
+	if err != nil {
+		log.Fatal().Err(err).Msg("failed to initialize database")
+	}
+
+	Habit = &Application{
+		DB: db,
+	}
+	err = sqliteBase.InitSchema(dbFileName, Habit.DB, tableSchemas, allExpectedColumns, dbExists)
+	if err != nil {
+		log.Fatal().Err(err).Msg("failed to initialize schema")
+	}
 }
