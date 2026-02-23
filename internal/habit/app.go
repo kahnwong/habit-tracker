@@ -1,9 +1,11 @@
 package habit
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"strings"
+	"testing"
 	"time"
 
 	cliBase "github.com/kahnwong/cli-base"
@@ -176,6 +178,9 @@ func init() {
 	var err error
 	config, err = cliBase.ReadYaml[Config]("~/.config/habit-tracker/config.yaml")
 	if err != nil {
+		if errors.Is(err, os.ErrNotExist) && testing.Testing() {
+			return
+		}
 		log.Fatal().Err(err).Msg("failed to read config")
 	}
 
