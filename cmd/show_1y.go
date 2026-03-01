@@ -7,7 +7,7 @@ import (
 )
 
 var showYearCmd = &cobra.Command{
-	Use:               "show-year",
+	Use:               "show-1y",
 	Short:             "Show habit stats for current year",
 	ValidArgsFunction: HabitsGet,
 	Run: func(cmd *cobra.Command, args []string) {
