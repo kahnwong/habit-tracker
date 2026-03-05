@@ -8,7 +8,7 @@ require (
 	github.com/jmoiron/sqlx v1.4.0
 	github.com/kahnwong/cli-base v0.0.0-20260130142944-47fb95a69ad9
 	github.com/kahnwong/sqlite-base v0.0.0-20260131063229-6f370367adc0
-	github.com/mattn/go-sqlite3 v1.14.33
+	github.com/mattn/go-sqlite3 v1.14.34
 	github.com/rs/zerolog v1.34.0
 	github.com/spf13/cobra v1.10.2
 )
