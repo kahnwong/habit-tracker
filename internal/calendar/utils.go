@@ -7,8 +7,9 @@ import (
 
 func generateMonths(lookbackMonths int) []time.Time {
 	allMonths := make([]time.Time, lookbackMonths)
+	firstOfCurrentMonth := time.Date(now.Year(), now.Month(), 1, 0, 0, 0, 0, now.Location())
 	for i := 0; i < lookbackMonths; i++ {
-		allMonths[lookbackMonths-1-i] = now.AddDate(0, -i, 0)
+		allMonths[lookbackMonths-1-i] = firstOfCurrentMonth.AddDate(0, -i, 0)
 	}
 
 	return allMonths

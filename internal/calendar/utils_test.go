@@ -126,3 +126,52 @@ func TestGetMaxWeeks(t *testing.T) {
 		})
 	}
 }
+
+func TestGenerateMonths(t *testing.T) {
+	// Save original now and restore after test
+	originalNow := now
+	defer func() { now = originalNow }()
+
+	tests := []struct {
+		name           string
+		currentDate    time.Time
+		lookbackMonths int
+		expectedMonths []time.Month
+	}{
+		{
+			name:           "3 months from March 31 (edge case)",
+			currentDate:    time.Date(2026, 3, 31, 0, 0, 0, 0, time.Local),
+			lookbackMonths: 3,
+			expectedMonths: []time.Month{time.January, time.February, time.March},
+		},
+		{
+			name:           "3 months from January 31",
+			currentDate:    time.Date(2024, 1, 31, 0, 0, 0, 0, time.Local),
+			lookbackMonths: 3,
+			expectedMonths: []time.Month{time.November, time.December, time.January},
+		},
+		{
+			name:           "2 months from May 15",
+			currentDate:    time.Date(2024, 5, 15, 0, 0, 0, 0, time.Local),
+			lookbackMonths: 2,
+			expectedMonths: []time.Month{time.April, time.May},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			now = tt.currentDate
+			result := generateMonths(tt.lookbackMonths)
+
+			if len(result) != tt.lookbackMonths {
+				t.Errorf("generateMonths() returned %d months, expected %d", len(result), tt.lookbackMonths)
+			}
+
+			for i, month := range result {
+				if month.Month() != tt.expectedMonths[i] {
+					t.Errorf("generateMonths()[%d] = %s, expected %s", i, month.Month(), tt.expectedMonths[i])
+				}
+			}
+		})
+	}
+}
