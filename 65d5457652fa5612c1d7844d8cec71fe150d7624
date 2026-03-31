@@ -1,0 +1,25 @@
+internal/calendar/utils_test.go
+  23faa759d85c4ded 129-177
+internal/calendar/utils.go
+  23faa759d85c4ded 10,12
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.1.22",
+  "base_commit_sha": "65d5457652fa5612c1d7844d8cec71fe150d7624",
+  "prompts": {
+    "23faa759d85c4ded": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_2bd14e140ffe0MlK9tJn29FwB9",
+        "model": "custom/claude-sonnet-4-5"
+      },
+      "human_author": "Karn Wong <karn@karnwong.me>",
+      "messages": [],
+      "total_additions": 51,
+      "total_deletions": 1,
+      "accepted_lines": 51,
+      "overriden_lines": 0
+    }
+  }
+}
