@@ -28,29 +28,35 @@ func Create(args []string) error {
 }
 
 func Do(args []string) error {
-	if err := validateHabit(args); err != nil {
+	if err := validateHabitName(args); err != nil {
 		return err
 	}
 
-	date := time.Now().Format("2006-01-02")
+	date := time.Now()
+	dateStr := date.Format("2006-01-02")
 	if len(args) == 2 {
-		date = args[1]
+		secondArg := args[1]
+		if secondArg == "yesterday" {
+			dateStr = date.AddDate(0, 0, -1).Format("2006-01-02")
+		} else {
+			dateStr = args[1]
+		}
 	}
 
 	activity := Activity{
-		Date: date, IsCompleted: 1, HabitName: args[0]}
+		Date: dateStr, IsCompleted: 1, HabitName: args[0]}
 
 	err := Habit.Do(activity)
 	if err != nil {
 		return fmt.Errorf("error logging habit: %w", err)
 	}
 
-	log.Info().Msgf("Logged %s for %s", args[0], date)
+	log.Info().Msgf("Logged %s for %s", args[0], dateStr)
 	return nil
 }
 
 func Undo(args []string) error {
-	if err := validateHabit(args); err != nil {
+	if err := validateHabitName(args); err != nil {
 		return err
 	}
 
@@ -69,7 +75,7 @@ func Undo(args []string) error {
 }
 
 func ShowHabitActivity(lookbackMonths int, args []string) error {
-	if err := validateHabit(args); err != nil {
+	if err := validateHabitName(args); err != nil {
 		return err
 	}
 
@@ -167,7 +173,7 @@ func ShowPeriodActivity(period string) error {
 }
 
 // utils
-func validateHabit(args []string) error {
+func validateHabitName(args []string) error {
 	if len(args) == 0 {
 		return fmt.Errorf("habit must be specified")
 	}
