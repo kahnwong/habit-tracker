@@ -190,12 +190,9 @@ func init() {
 	}
 
 	// init app
-	dbExists, err := sqliteBase.IsDBExists(dbFileName)
-	if err != nil {
-		log.Fatal().Err(err).Msg("failed to check if database exists")
-	}
-
-	db, err := sqliteBase.InitDB(dbFileName)
+	db, err := sqliteBase.Open(sqliteBase.Config{
+		Path: dbFileName,
+	})
 	if err != nil {
 		log.Fatal().Err(err).Msg("failed to initialize database")
 	}
@@ -203,7 +200,7 @@ func init() {
 	Habit = &Application{
 		DB: db,
 	}
-	err = sqliteBase.InitSchema(dbFileName, Habit.DB, tableSchemas, allExpectedColumns, dbExists)
+	err = sqliteBase.ApplyMigrations(Habit.DB, "internal/habit/migrations")
 	if err != nil {
 		log.Fatal().Err(err).Msg("failed to initialize schema")
 	}
