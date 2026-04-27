@@ -3,6 +3,7 @@ package habit
 import (
 	"errors"
 	"fmt"
+	stdlog "log"
 	"os"
 	"strings"
 	"testing"
@@ -15,6 +16,7 @@ import (
 
 	"github.com/jmoiron/sqlx"
 	_ "github.com/mattn/go-sqlite3"
+	"github.com/pressly/goose/v3"
 )
 
 type Config struct {
@@ -34,6 +36,14 @@ type Activity struct {
 	Date        string `db:"date"`
 	IsCompleted int    `db:"is_completed"` // 0 for false, 1 for true
 	HabitName   string `db:"habit_name"`
+}
+
+type gooseErrorLogger struct{}
+
+func (gooseErrorLogger) Printf(string, ...interface{}) {}
+
+func (gooseErrorLogger) Fatalf(format string, v ...interface{}) {
+	stdlog.Fatalf(format, v...)
 }
 
 type periodActivityRow map[string]interface{} // for periodActivity
@@ -169,6 +179,7 @@ func (Habit *Application) GetPeriodActivity(period string) ([]periodActivityRow,
 func init() {
 	// set logs
 	log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
+	goose.SetLogger(gooseErrorLogger{})
 	zerolog.SetGlobalLevel(zerolog.InfoLevel)
 	if os.Getenv("MODE") == "DEBUG" {
 		zerolog.SetGlobalLevel(zerolog.DebugLevel)
