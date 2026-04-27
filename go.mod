@@ -10,7 +10,7 @@ require (
 	github.com/kahnwong/sqlite-base v0.0.0-20260427120538-57a98f7885c3
 	github.com/mattn/go-sqlite3 v1.14.42
 	github.com/pressly/goose/v3 v3.26.0
-	github.com/rs/zerolog v1.35.0
+	github.com/rs/zerolog v1.35.1
 	github.com/spf13/cobra v1.10.2
 )
 
