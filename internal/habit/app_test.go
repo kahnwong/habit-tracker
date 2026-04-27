@@ -4,6 +4,8 @@ import (
 	"testing"
 	"time"
 
+	sqliteBase "github.com/kahnwong/sqlite-base"
+
 	"github.com/jmoiron/sqlx"
 	_ "github.com/mattn/go-sqlite3"
 )
@@ -16,11 +18,9 @@ func setupTestDB(t *testing.T) *Application {
 	}
 
 	// Create tables
-	for _, schema := range tableSchemas {
-		_, err := db.Exec(schema)
-		if err != nil {
-			t.Fatalf("failed to create schema: %v", err)
-		}
+	err = sqliteBase.ApplyMigrations(db, "migrations")
+	if err != nil {
+		t.Fatalf("failed to apply migrations: %v", err)
 	}
 
 	return &Application{DB: db}
