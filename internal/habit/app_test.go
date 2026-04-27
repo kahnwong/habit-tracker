@@ -4,10 +4,9 @@ import (
 	"testing"
 	"time"
 
-	sqliteBase "github.com/kahnwong/sqlite-base"
-
 	"github.com/jmoiron/sqlx"
 	_ "github.com/mattn/go-sqlite3"
+	"github.com/pressly/goose/v3"
 )
 
 // setupTestDB creates an in-memory database for testing
@@ -18,8 +17,11 @@ func setupTestDB(t *testing.T) *Application {
 	}
 
 	// Create tables
-	err = sqliteBase.ApplyMigrations(db, "migrations")
-	if err != nil {
+	goose.SetBaseFS(embedMigrations)
+	if err := goose.SetDialect("sqlite3"); err != nil {
+		t.Fatalf("failed to set goose dialect: %v", err)
+	}
+	if err := goose.Up(db.DB, "migrations"); err != nil {
 		t.Fatalf("failed to apply migrations: %v", err)
 	}
 

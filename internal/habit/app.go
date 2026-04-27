@@ -1,6 +1,7 @@
 package habit
 
 import (
+	"embed"
 	"errors"
 	"fmt"
 	stdlog "log"
@@ -10,7 +11,6 @@ import (
 	"time"
 
 	cliBase "github.com/kahnwong/cli-base"
-	sqliteBase "github.com/kahnwong/sqlite-base"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 
@@ -27,6 +27,9 @@ var config *Config
 var dbFileName string
 
 var Habit *Application
+
+//go:embed migrations/*.sql
+var embedMigrations embed.FS
 
 type Application struct {
 	DB *sqlx.DB
@@ -201,9 +204,7 @@ func init() {
 	}
 
 	// init app
-	db, err := sqliteBase.Open(sqliteBase.Config{
-		Path: dbFileName,
-	})
+	db, err := sqlx.Connect("sqlite3", dbFileName)
 	if err != nil {
 		log.Fatal().Err(err).Msg("failed to initialize database")
 	}
@@ -211,8 +212,12 @@ func init() {
 	Habit = &Application{
 		DB: db,
 	}
-	err = sqliteBase.ApplyMigrations(Habit.DB, "internal/habit/migrations")
-	if err != nil {
+
+	goose.SetBaseFS(embedMigrations)
+	if err := goose.SetDialect("sqlite3"); err != nil {
+		log.Fatal().Err(err).Msg("failed to set goose dialect")
+	}
+	if err := goose.Up(Habit.DB.DB, "migrations"); err != nil {
 		log.Fatal().Err(err).Msg("failed to initialize schema")
 	}
 }
