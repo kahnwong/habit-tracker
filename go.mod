@@ -7,8 +7,9 @@ require (
 	github.com/jedib0t/go-pretty/v6 v6.7.10
 	github.com/jmoiron/sqlx v1.4.0
 	github.com/kahnwong/cli-base v0.0.0-20260130142944-47fb95a69ad9
-	github.com/kahnwong/sqlite-base v0.0.0-20260426163322-98e24e0d5c89
+	github.com/kahnwong/sqlite-base v0.0.0-20260427120538-57a98f7885c3
 	github.com/mattn/go-sqlite3 v1.14.42
+	github.com/pressly/goose/v3 v3.26.0
 	github.com/rs/zerolog v1.35.0
 	github.com/spf13/cobra v1.10.2
 )
@@ -20,7 +21,6 @@ require (
 	github.com/mattn/go-isatty v0.0.21 // indirect
 	github.com/mattn/go-runewidth v0.0.16 // indirect
 	github.com/mfridman/interpolate v0.0.2 // indirect
-	github.com/pressly/goose/v3 v3.26.0 // indirect
 	github.com/rivo/uniseg v0.4.7 // indirect
 	github.com/sethvargo/go-retry v0.3.0 // indirect
 	github.com/spf13/pflag v1.0.9 // indirect

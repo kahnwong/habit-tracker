@@ -18,7 +18,7 @@ func setupTestDB(t *testing.T) *Application {
 	}
 
 	// Create tables
-	err = sqliteBase.ApplyMigrations(db, "migrations")
+	err = sqliteBase.ApplyMigrationsFS(db, migrationFiles, "migrations")
 	if err != nil {
 		t.Fatalf("failed to apply migrations: %v", err)
 	}

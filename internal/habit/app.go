@@ -1,6 +1,7 @@
 package habit
 
 import (
+	"embed"
 	"errors"
 	"fmt"
 	stdlog "log"
@@ -11,12 +12,12 @@ import (
 
 	cliBase "github.com/kahnwong/cli-base"
 	sqliteBase "github.com/kahnwong/sqlite-base"
+	"github.com/pressly/goose/v3"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 
 	"github.com/jmoiron/sqlx"
 	_ "github.com/mattn/go-sqlite3"
-	"github.com/pressly/goose/v3"
 )
 
 type Config struct {
@@ -27,6 +28,9 @@ var config *Config
 var dbFileName string
 
 var Habit *Application
+
+//go:embed migrations/*.sql
+var migrationFiles embed.FS
 
 type Application struct {
 	DB *sqlx.DB
@@ -202,7 +206,9 @@ func init() {
 
 	// init app
 	db, err := sqliteBase.Open(sqliteBase.Config{
-		Path: dbFileName,
+		Path:         dbFileName,
+		MigrationDir: "migrations",
+		MigrationFS:  migrationFiles,
 	})
 	if err != nil {
 		log.Fatal().Err(err).Msg("failed to initialize database")
@@ -210,9 +216,5 @@ func init() {
 
 	Habit = &Application{
 		DB: db,
-	}
-	err = sqliteBase.ApplyMigrations(Habit.DB, "internal/habit/migrations")
-	if err != nil {
-		log.Fatal().Err(err).Msg("failed to initialize schema")
 	}
 }
