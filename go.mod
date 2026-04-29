@@ -1,6 +1,6 @@
 module github.com/kahnwong/habit-tracker
 
-go 1.25.0
+go 1.25.7
 
 require (
 	github.com/fatih/color v1.19.0
@@ -8,9 +8,9 @@ require (
 	github.com/jmoiron/sqlx v1.4.0
 	github.com/kahnwong/cli-base v0.0.0-20260130142944-47fb95a69ad9
 	github.com/kahnwong/sqlite-base v0.0.0-20260427120538-57a98f7885c3
-	github.com/mattn/go-sqlite3 v1.14.42
-	github.com/pressly/goose/v3 v3.26.0
-	github.com/rs/zerolog v1.35.0
+	github.com/mattn/go-sqlite3 v1.14.44
+	github.com/pressly/goose/v3 v3.27.1
+	github.com/rs/zerolog v1.35.1
 	github.com/spf13/cobra v1.10.2
 )
 
@@ -25,8 +25,8 @@ require (
 	github.com/sethvargo/go-retry v0.3.0 // indirect
 	github.com/spf13/pflag v1.0.9 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
-	golang.org/x/sync v0.16.0 // indirect
-	golang.org/x/sys v0.42.0 // indirect
-	golang.org/x/text v0.27.0 // indirect
+	golang.org/x/sync v0.20.0 // indirect
+	golang.org/x/sys v0.43.0 // indirect
+	golang.org/x/text v0.36.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
