@@ -23,6 +23,8 @@ github.com/kahnwong/cli-base v0.0.0-20260130142944-47fb95a69ad9 h1:o/I6juFivYF8M
 github.com/kahnwong/cli-base v0.0.0-20260130142944-47fb95a69ad9/go.mod h1:rDVsfweQ4kaxpAu+IZtZycFBUAfJX/72cEXpEoRyrVM=
 github.com/kahnwong/sqlite-base v0.0.0-20260427120538-57a98f7885c3 h1:XG8j41+MP2QBiw8ZKycaCkkEa+mkBo0ilNfVg+kdrn4=
 github.com/kahnwong/sqlite-base v0.0.0-20260427120538-57a98f7885c3/go.mod h1:Bplo+Clc6Q8hDzS6idP10yI8jJsM7bSI3NmTKB55D/c=
+github.com/kahnwong/sqlite-base v0.0.0-20260428044408-00cde68c3eda h1:ITbUYXtoVkLlCBiVvJMJiobhi9xr3BQueSOkc5+S/Y0=
+github.com/kahnwong/sqlite-base v0.0.0-20260428044408-00cde68c3eda/go.mod h1:Bplo+Clc6Q8hDzS6idP10yI8jJsM7bSI3NmTKB55D/c=
 github.com/kr/pretty v0.3.1 h1:flRD4NNwYAUpkphVc1HcthR4KEIFJ65n8Mw5qdRn3LE=
 github.com/kr/pretty v0.3.1/go.mod h1:hoEshYVHaxMs3cyo3Yncou5ZscifuDolrwPKZanG3xk=
 github.com/kr/text v0.2.0 h1:5Nx0Ya0ZqY2ygV366QzturHI13Jq95ApcVaJBhpS+AY=
