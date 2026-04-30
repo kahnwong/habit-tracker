@@ -6,7 +6,7 @@ require (
 	github.com/fatih/color v1.19.0
 	github.com/jedib0t/go-pretty/v6 v6.7.10
 	github.com/jmoiron/sqlx v1.4.0
-	github.com/kahnwong/cli-base v0.0.0-20260130142944-47fb95a69ad9
+	github.com/kahnwong/cli-base v0.0.0-20260430061757-292811e13a6d
 	github.com/kahnwong/sqlite-base v0.0.0-20260428044408-00cde68c3eda
 	github.com/mattn/go-sqlite3 v1.14.44
 	github.com/pressly/goose/v3 v3.27.1
