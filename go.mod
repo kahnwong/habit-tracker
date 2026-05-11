@@ -1,6 +1,6 @@
 module github.com/kahnwong/habit-tracker
 
-go 1.25.7
+go 1.26.3
 
 require (
 	github.com/fatih/color v1.19.0
