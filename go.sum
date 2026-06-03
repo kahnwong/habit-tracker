@@ -27,6 +27,8 @@ github.com/kahnwong/sqlite-base v0.0.0-20260427120538-57a98f7885c3 h1:XG8j41+MP2
 github.com/kahnwong/sqlite-base v0.0.0-20260427120538-57a98f7885c3/go.mod h1:Bplo+Clc6Q8hDzS6idP10yI8jJsM7bSI3NmTKB55D/c=
 github.com/kahnwong/sqlite-base v0.0.0-20260428044408-00cde68c3eda h1:ITbUYXtoVkLlCBiVvJMJiobhi9xr3BQueSOkc5+S/Y0=
 github.com/kahnwong/sqlite-base v0.0.0-20260428044408-00cde68c3eda/go.mod h1:Bplo+Clc6Q8hDzS6idP10yI8jJsM7bSI3NmTKB55D/c=
+github.com/kahnwong/sqlite-base v0.0.0-20260603115212-0b9e0770ebb3 h1:5YKzGs2Oe8bGQhb6KGk4WY3FcBxtYY2gNtY9jul4HFQ=
+github.com/kahnwong/sqlite-base v0.0.0-20260603115212-0b9e0770ebb3/go.mod h1:qwkuPmmog5YMFUTDOH0epRggWGB/tLY3/AMfKCu4uNM=
 github.com/kr/pretty v0.3.1 h1:flRD4NNwYAUpkphVc1HcthR4KEIFJ65n8Mw5qdRn3LE=
 github.com/kr/pretty v0.3.1/go.mod h1:hoEshYVHaxMs3cyo3Yncou5ZscifuDolrwPKZanG3xk=
 github.com/kr/text v0.2.0 h1:5Nx0Ya0ZqY2ygV366QzturHI13Jq95ApcVaJBhpS+AY=
@@ -72,6 +74,8 @@ github.com/spf13/cobra v1.10.2 h1:DMTTonx5m65Ic0GOoRY2c16WCbHxOOw6xxezuLaBpcU=
 github.com/spf13/cobra v1.10.2/go.mod h1:7C1pvHqHw5A4vrJfjNwvOdzYu0Gml16OCs2GRiTUUS4=
 github.com/spf13/pflag v1.0.9 h1:9exaQaMOCwffKiiiYk6/BndUBv+iRViNW+4lEMi0PvY=
 github.com/spf13/pflag v1.0.9/go.mod h1:McXfInJRrz4CZXVZOBLb0bTZqETkiAhM9Iw0y3An2Bg=
+github.com/spf13/pflag v1.0.10 h1:4EBh2KAYBwaONj6b2Ye1GiHfwjqyROoF4RwYO+vPwFk=
+github.com/spf13/pflag v1.0.10/go.mod h1:McXfInJRrz4CZXVZOBLb0bTZqETkiAhM9Iw0y3An2Bg=
 github.com/stretchr/testify v1.11.0 h1:ib4sjIrwZKxE5u/Japgo/7SJV3PvgjGiRNAvTVGqQl8=
 github.com/stretchr/testify v1.11.0/go.mod h1:wZwfW3scLgRK+23gO65QZefKpKQRnfz6sD981Nm4B6U=
 go.uber.org/multierr v1.11.0 h1:blXXJkSxSSfBVBlC76pxqeO+LN3aDfLQo+309xJstO0=
