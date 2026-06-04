@@ -4,26 +4,24 @@ import (
 	"testing"
 	"time"
 
+	"github.com/kahnwong/habit-tracker/internal/habit/store"
 	sqliteBase "github.com/kahnwong/sqlite-base"
-
-	"github.com/jmoiron/sqlx"
-	_ "github.com/mattn/go-sqlite3"
 )
 
 // setupTestDB creates an in-memory database for testing
 func setupTestDB(t *testing.T) *Application {
-	db, err := sqlx.Connect("sqlite3", ":memory:")
+	t.Helper()
+
+	db, err := sqliteBase.Open(sqliteBase.Config{
+		Path:         ":memory:",
+		MigrationDir: "migrations",
+		MigrationFS:  migrationFiles,
+	})
 	if err != nil {
 		t.Fatalf("failed to create test database: %v", err)
 	}
 
-	// Create tables
-	err = sqliteBase.ApplyMigrationsFS(db, migrationFiles, "migrations")
-	if err != nil {
-		t.Fatalf("failed to apply migrations: %v", err)
-	}
-
-	return &Application{DB: db}
+	return &Application{DB: db, Queries: store.New(db)}
 }
 
 func TestCreateHabit(t *testing.T) {
@@ -137,7 +135,7 @@ func TestDo(t *testing.T) {
 
 	// Verify activity was recorded
 	var count int
-	err = app.DB.Get(&count, "SELECT COUNT(*) FROM activity WHERE habit_name = ? AND date = ?", "exercise", "2024-01-15")
+	err = app.DB.QueryRow("SELECT COUNT(*) FROM activity WHERE habit_name = ? AND date = ?", "exercise", "2024-01-15").Scan(&count)
 	if err != nil {
 		t.Fatalf("failed to query activity: %v", err)
 	}
@@ -174,7 +172,7 @@ func TestDoIdempotent(t *testing.T) {
 
 	// Should only have one record due to INSERT OR IGNORE
 	var count int
-	err := app.DB.Get(&count, "SELECT COUNT(*) FROM activity WHERE habit_name = ? AND date = ?", "exercise", "2024-01-15")
+	err := app.DB.QueryRow("SELECT COUNT(*) FROM activity WHERE habit_name = ? AND date = ?", "exercise", "2024-01-15").Scan(&count)
 	if err != nil {
 		t.Fatalf("failed to query activity: %v", err)
 	}
@@ -214,7 +212,7 @@ func TestUndo(t *testing.T) {
 
 	// Verify activity was deleted
 	var count int
-	err = app.DB.Get(&count, "SELECT COUNT(*) FROM activity WHERE habit_name = ? AND date = ?", "exercise", "2024-01-15")
+	err = app.DB.QueryRow("SELECT COUNT(*) FROM activity WHERE habit_name = ? AND date = ?", "exercise", "2024-01-15").Scan(&count)
 	if err != nil {
 		t.Fatalf("failed to query activity: %v", err)
 	}

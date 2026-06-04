@@ -1,0 +1,9 @@
+version: "2"
+sql:
+  - engine: "sqlite"
+    schema: "internal/habit/db/schema.sql"
+    queries: "internal/habit/db/queries.sql"
+    gen:
+      go:
+        package: "store"
+        out: "internal/habit/store"

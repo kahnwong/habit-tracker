@@ -1,6 +1,8 @@
 package habit
 
 import (
+	"context"
+	"database/sql"
 	"embed"
 	"errors"
 	"fmt"
@@ -11,13 +13,11 @@ import (
 	"time"
 
 	cliBase "github.com/kahnwong/cli-base"
+	"github.com/kahnwong/habit-tracker/internal/habit/store"
 	sqliteBase "github.com/kahnwong/sqlite-base"
 	"github.com/pressly/goose/v3"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
-
-	"github.com/jmoiron/sqlx"
-	_ "github.com/mattn/go-sqlite3"
 )
 
 type Config struct {
@@ -33,7 +33,8 @@ var Habit *Application
 var migrationFiles embed.FS
 
 type Application struct {
-	DB *sqlx.DB
+	DB      *sql.DB
+	Queries *store.Queries
 }
 
 type Activity struct {
@@ -53,8 +54,7 @@ func (gooseErrorLogger) Fatalf(format string, v ...interface{}) {
 type periodActivityRow map[string]interface{} // for periodActivity
 
 func (Habit *Application) CreateHabit(habit string) error {
-	query := `INSERT INTO habit (name) VALUES (?)`
-	_, err := Habit.DB.Exec(query, habit)
+	err := Habit.Queries.CreateHabit(context.Background(), habit)
 	if err != nil {
 		return fmt.Errorf("error inserting habit '%s': %w", habit, err)
 	}
@@ -63,10 +63,7 @@ func (Habit *Application) CreateHabit(habit string) error {
 }
 
 func (Habit *Application) GetHabits() ([]string, error) {
-	var habits []string
-	query := "SELECT name FROM habit"
-
-	err := Habit.DB.Select(&habits, query)
+	habits, err := Habit.Queries.ListHabits(context.Background())
 	if err != nil {
 		return habits, fmt.Errorf("error fetching habits")
 	}
@@ -75,8 +72,11 @@ func (Habit *Application) GetHabits() ([]string, error) {
 }
 
 func (Habit *Application) Do(activity Activity) error {
-	query := `INSERT OR IGNORE INTO activity (date, is_completed, habit_name) VALUES (?, ?, ?)`
-	_, err := Habit.DB.Exec(query, activity.Date, activity.IsCompleted, activity.HabitName)
+	err := Habit.Queries.CreateActivity(context.Background(), store.CreateActivityParams{
+		Date:        activity.Date,
+		IsCompleted: int64(activity.IsCompleted),
+		HabitName:   activity.HabitName,
+	})
 	if err != nil {
 		return fmt.Errorf("error inserting activity for habit '%s' on '%s': %w", activity.HabitName, activity.Date, err)
 	}
@@ -85,8 +85,10 @@ func (Habit *Application) Do(activity Activity) error {
 }
 
 func (Habit *Application) Undo(activity Activity) error {
-	deleteQuery := "DELETE FROM activity WHERE date = ? AND habit_name = ?"
-	_, err := Habit.DB.Exec(deleteQuery, activity.Date, activity.HabitName)
+	err := Habit.Queries.DeleteActivity(context.Background(), store.DeleteActivityParams{
+		Date:      activity.Date,
+		HabitName: activity.HabitName,
+	})
 	if err != nil {
 		return fmt.Errorf("error deleting habit '%s' on '%s': %w", activity.HabitName, activity.Date, err)
 	}
@@ -96,17 +98,22 @@ func (Habit *Application) Undo(activity Activity) error {
 
 func (Habit *Application) GetHabitActivity(habitName string, lookbackMonths int) ([]Activity, error) {
 	lookbackStart := time.Now().AddDate(0, -lookbackMonths, 0)
-	var completedActivities []Activity
 
-	query := `
-	SELECT date, is_completed, habit_name
-	FROM activity
-	WHERE is_completed = 1 AND date >= ? AND habit_name = ?
-	ORDER BY date;`
-
-	err := Habit.DB.Select(&completedActivities, query, lookbackStart, habitName)
+	rows, err := Habit.Queries.ListCompletedHabitActivities(context.Background(), store.ListCompletedHabitActivitiesParams{
+		LookbackStart: lookbackStart.Format("2006-01-02"),
+		HabitName:     habitName,
+	})
 	if err != nil {
-		return completedActivities, fmt.Errorf("error fetching activity for habit '%s'", habitName)
+		return nil, fmt.Errorf("error fetching activity for habit '%s'", habitName)
+	}
+
+	completedActivities := make([]Activity, 0, len(rows))
+	for _, row := range rows {
+		completedActivities = append(completedActivities, Activity{
+			Date:        row.Date,
+			IsCompleted: int(row.IsCompleted),
+			HabitName:   row.HabitName,
+		})
 	}
 
 	return completedActivities, nil
@@ -135,46 +142,69 @@ func (Habit *Application) GetPeriodActivity(period string) ([]periodActivityRow,
 	}
 	selectStmt := strings.Join(selectClauses, ",\n    ")
 
-	baseQuery := fmt.Sprintf(`
+	placeholders := make([]string, 0, len(dates))
+	args := make([]any, 0, len(dates))
+	for _, date := range dates {
+		placeholders = append(placeholders, "?")
+		args = append(args, date)
+	}
+
+	query := fmt.Sprintf(`
 	SELECT
 	   %s
 	FROM
 	   habit AS h
 	LEFT JOIN
-		activity AS a ON h.name = a.habit_name AND a.date IN (?)
+		activity AS a ON h.name = a.habit_name AND a.date IN (%s)
 	GROUP BY
 	   h.name
 	ORDER BY
-	   h.name;`, selectStmt)
-
-	query, args, err := sqlx.In(baseQuery, dates)
-	if err != nil {
-		return nil, dates, fmt.Errorf("error preparing query with sqlx.In: %w", err)
-	}
+	   h.name;`, selectStmt, strings.Join(placeholders, ", "))
 
 	// execute query
-	query = Habit.DB.Rebind(query)
-	rows, err := Habit.DB.Queryx(query, args...)
+	rows, err := Habit.DB.QueryContext(context.Background(), query, args...)
 	if err != nil {
 		return nil, dates, fmt.Errorf("error executing query: %w", err)
 	}
-	defer func(rows *sqlx.Rows) {
+	defer func(rows *sql.Rows) {
 		err := rows.Close()
 		if err != nil {
 			log.Error().Err(err).Msg("error closing rows")
 		}
 	}(rows)
 
+	columns, err := rows.Columns()
+	if err != nil {
+		return nil, dates, fmt.Errorf("error reading columns: %w", err)
+	}
+
 	// parse
 	var completedActivities []periodActivityRow
 	for rows.Next() {
-		row := make(periodActivityRow)
-		err = rows.MapScan(row)
-		if err != nil {
+		values := make([]any, len(columns))
+		scanArgs := make([]any, len(columns))
+		for i := range values {
+			scanArgs[i] = &values[i]
+		}
+
+		if err := rows.Scan(scanArgs...); err != nil {
 			return nil, dates, fmt.Errorf("error scanning row: %w", err)
 		}
 
+		row := make(periodActivityRow)
+		for i, column := range columns {
+			switch value := values[i].(type) {
+			case []byte:
+				row[column] = string(value)
+			default:
+				row[column] = value
+			}
+		}
+
 		completedActivities = append(completedActivities, row)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, dates, fmt.Errorf("error reading rows: %w", err)
 	}
 
 	return completedActivities, dates, nil
@@ -215,6 +245,7 @@ func init() {
 	}
 
 	Habit = &Application{
-		DB: db,
+		DB:      db,
+		Queries: store.New(db),
 	}
 }
