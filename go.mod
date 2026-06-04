@@ -4,7 +4,7 @@ go 1.26.4
 
 require (
 	github.com/fatih/color v1.19.0
-	github.com/jedib0t/go-pretty/v6 v6.7.10
+	github.com/jedib0t/go-pretty/v6 v6.8.0
 	github.com/jmoiron/sqlx v1.4.0
 	github.com/kahnwong/cli-base v0.0.0-20260512102925-06fe226bcb0d
 	github.com/kahnwong/sqlite-base v0.0.0-20260428044408-00cde68c3eda
