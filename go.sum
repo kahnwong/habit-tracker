@@ -52,6 +52,8 @@ github.com/jinzhu/inflection v1.0.0 h1:K317FqzuhWc8YvSVlFMCCUb36O/S9MCKRDI7QkRKD
 github.com/jinzhu/inflection v1.0.0/go.mod h1:h+uFLlag+Qp1Va5pdKtLDYj+kHp5pxUVkryuEj+Srlc=
 github.com/kahnwong/cli-base v0.0.0-20260512102925-06fe226bcb0d h1:9eE1Js34TBKd7diyiMUUELc0ZRWc9DbxWJr/bhg4zko=
 github.com/kahnwong/cli-base v0.0.0-20260512102925-06fe226bcb0d/go.mod h1:k2QIbUDh4mZWVoczH5CVfczQLU7nurgGeldpYtak0Ps=
+github.com/kahnwong/cli-base v0.0.0-20260630163537-c7bc0284984a h1:WjKZL43y2A1XRn8c1R/Odlk+ErAJZ5On0owPwy/axII=
+github.com/kahnwong/cli-base v0.0.0-20260630163537-c7bc0284984a/go.mod h1:k2QIbUDh4mZWVoczH5CVfczQLU7nurgGeldpYtak0Ps=
 github.com/kahnwong/sqlite-base v0.0.0-20260603115212-0b9e0770ebb3 h1:5YKzGs2Oe8bGQhb6KGk4WY3FcBxtYY2gNtY9jul4HFQ=
 github.com/kahnwong/sqlite-base v0.0.0-20260603115212-0b9e0770ebb3/go.mod h1:qwkuPmmog5YMFUTDOH0epRggWGB/tLY3/AMfKCu4uNM=
 github.com/kr/pretty v0.1.0/go.mod h1:dAy3ld7l9f0ibDNOQOHHMYYIIbhfbHSm3C4ZsoJORNo=
