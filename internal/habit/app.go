@@ -155,7 +155,7 @@ func (Habit *Application) GetPeriodActivity(period string) ([]periodActivityRow,
 	FROM
 	   habit AS h
 	LEFT JOIN
-		activity AS a ON h.name = a.habit_name AND a.date IN (%s)
+		activity AS a ON h.id = a.habit_id AND a.date IN (%s)
 	GROUP BY
 	   h.name
 	ORDER BY

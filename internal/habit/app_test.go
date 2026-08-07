@@ -135,7 +135,7 @@ func TestDo(t *testing.T) {
 
 	// Verify activity was recorded
 	var count int
-	err = app.DB.QueryRow("SELECT COUNT(*) FROM activity WHERE habit_name = ? AND date = ?", "exercise", "2024-01-15").Scan(&count)
+	err = app.DB.QueryRow("SELECT COUNT(*) FROM activity AS a JOIN habit AS h ON h.id = a.habit_id WHERE h.name = ? AND a.date = ?", "exercise", "2024-01-15").Scan(&count)
 	if err != nil {
 		t.Fatalf("failed to query activity: %v", err)
 	}
@@ -172,7 +172,7 @@ func TestDoIdempotent(t *testing.T) {
 
 	// Should only have one record due to INSERT OR IGNORE
 	var count int
-	err := app.DB.QueryRow("SELECT COUNT(*) FROM activity WHERE habit_name = ? AND date = ?", "exercise", "2024-01-15").Scan(&count)
+	err := app.DB.QueryRow("SELECT COUNT(*) FROM activity AS a JOIN habit AS h ON h.id = a.habit_id WHERE h.name = ? AND a.date = ?", "exercise", "2024-01-15").Scan(&count)
 	if err != nil {
 		t.Fatalf("failed to query activity: %v", err)
 	}
@@ -212,7 +212,7 @@ func TestUndo(t *testing.T) {
 
 	// Verify activity was deleted
 	var count int
-	err = app.DB.QueryRow("SELECT COUNT(*) FROM activity WHERE habit_name = ? AND date = ?", "exercise", "2024-01-15").Scan(&count)
+	err = app.DB.QueryRow("SELECT COUNT(*) FROM activity AS a JOIN habit AS h ON h.id = a.habit_id WHERE h.name = ? AND a.date = ?", "exercise", "2024-01-15").Scan(&count)
 	if err != nil {
 		t.Fatalf("failed to query activity: %v", err)
 	}

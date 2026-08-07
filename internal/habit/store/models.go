@@ -8,7 +8,7 @@ type Activity struct {
 	ID          int64
 	Date        string
 	IsCompleted int64
-	HabitName   string
+	HabitID     int64
 }
 
 type Habit struct {

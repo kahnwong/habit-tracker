@@ -10,8 +10,10 @@ import (
 )
 
 const createActivity = `-- name: CreateActivity :exec
-INSERT OR IGNORE INTO activity (date, is_completed, habit_name)
-VALUES (?1, ?2, ?3)
+INSERT OR IGNORE INTO activity (date, is_completed, habit_id)
+SELECT ?1, ?2, id
+FROM habit
+WHERE name = ?3
 `
 
 type CreateActivityParams struct {
@@ -37,7 +39,7 @@ func (q *Queries) CreateHabit(ctx context.Context, name string) error {
 const deleteActivity = `-- name: DeleteActivity :exec
 DELETE FROM activity
 WHERE date = ?1
-  AND habit_name = ?2
+  AND habit_id = (SELECT id FROM habit WHERE name = ?2)
 `
 
 type DeleteActivityParams struct {
@@ -51,11 +53,12 @@ func (q *Queries) DeleteActivity(ctx context.Context, arg DeleteActivityParams) 
 }
 
 const listCompletedHabitActivities = `-- name: ListCompletedHabitActivities :many
-SELECT date, is_completed, habit_name
-FROM activity
-WHERE is_completed = 1
-  AND date >= ?1
-  AND habit_name = ?2
+SELECT a.date, a.is_completed, h.name AS habit_name
+FROM activity AS a
+JOIN habit AS h ON h.id = a.habit_id
+WHERE a.is_completed = 1
+  AND a.date >= ?1
+  AND h.name = ?2
 ORDER BY date
 `
 
