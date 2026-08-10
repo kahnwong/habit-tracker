@@ -234,18 +234,27 @@ func init() {
 		log.Fatal().Err(err).Msg("failed to expand home path")
 	}
 
-	// init app
+	// Database initialization is deferred until a command actually uses it.
+}
+
+func Init() error {
+	if Habit != nil {
+		return nil
+	}
+
 	db, err := sqliteBase.Open(sqliteBase.Config{
 		Path:         dbFileName,
 		MigrationDir: "migrations",
 		MigrationFS:  migrationFiles,
 	})
 	if err != nil {
-		log.Fatal().Err(err).Msg("failed to initialize database")
+		return err
 	}
 
 	Habit = &Application{
 		DB:      db,
 		Queries: store.New(db),
 	}
+
+	return nil
 }
