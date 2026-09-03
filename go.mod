@@ -5,7 +5,7 @@ go 1.27.0
 require (
 	github.com/fatih/color v1.19.0
 	github.com/jedib0t/go-pretty/v6 v6.8.3
-	github.com/kahnwong/cli-base v0.0.0-20260630163537-c7bc0284984a
+	github.com/kahnwong/cli-base v0.0.0-20260901075751-219b9c6ba9cd
 	github.com/kahnwong/sqlite-base v0.0.0-20260710035018-7484c4d62e0b
 	github.com/pressly/goose/v3 v3.27.3
 	github.com/rs/zerolog v1.35.1
